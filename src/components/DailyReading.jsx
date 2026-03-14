@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { BookOpen, ChevronLeft, ChevronRight, X, Calendar, BookMarked, ArrowLeft, Loader2 } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, X, Calendar, BookMarked, Loader2 } from "lucide-react";
 import dailyReadings from "../data/dailyReadings.json";
 import bibleSchedule from "../data/bibleReadingSchedule.json";
 import bibleBooks from "../data/bibleBooks.json";
@@ -204,7 +204,7 @@ function VersePopup({ book, chapter, verse, onClose }) {
 
   return (
     <div
-      className="absolute inset-0 z-10 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
       onClick={onClose}
       style={{ animation: "verse-fade-in 0.2s ease-out" }}
     >
