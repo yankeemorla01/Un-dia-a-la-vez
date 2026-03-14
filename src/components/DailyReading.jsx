@@ -1,0 +1,659 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { BookOpen, ChevronLeft, ChevronRight, X, Calendar, BookMarked, ArrowLeft, Loader2 } from "lucide-react";
+import dailyReadings from "../data/dailyReadings.json";
+import bibleSchedule from "../data/bibleReadingSchedule.json";
+import bibleBooks from "../data/bibleBooks.json";
+
+const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const FULL_WEEK_DAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+// Full book names to slugs for weekly reading
+const FULL_BOOK_SLUGS = {
+  "Salmos": "salmos",
+  "Proverbios": "proverbios",
+  "Eclesiastés": "eclesiastes",
+  "Cantar de los Cantares": "cantar-de-los-cantares",
+  "Isaías": "isaias",
+  "Jeremías": "jeremias",
+  "Lamentaciones": "lamentaciones",
+  "Ezequiel": "ezequiel",
+};
+
+// Normalize jw.org slugs to local JSON keys (remove accents, lowercase)
+function normalizeSlug(slug) {
+  return slug.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/^el-/, '');
+}
+
+// Cache for loaded Bible data
+let bibleDataCache = null;
+async function loadBibleData() {
+  if (bibleDataCache) return bibleDataCache;
+  const res = await fetch('/biblia_nwt_estudio_es.json');
+  bibleDataCache = await res.json();
+  return bibleDataCache;
+}
+
+function getDateKey(date) {
+  return `2026-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatDate(date) {
+  return `${FULL_WEEK_DAYS[date.getDay()]}, ${date.getDate()} de ${MONTH_NAMES[date.getMonth()]}`;
+}
+
+function getWeeklyReading(date) {
+  let current = null;
+  for (const entry of bibleSchedule) {
+    const entryDate = new Date(2026, entry.month, entry.day);
+    if (entryDate <= date) {
+      current = entry;
+    }
+  }
+  return current ? current.reading : null;
+}
+
+function parseReadingChapters(reading) {
+  // Parse "Salmos 127 a 134" -> [{book: "salmos", chapter: 127}, ..., {book: "salmos", chapter: 134}]
+  // Parse "Proverbios 3" -> [{book: "proverbios", chapter: 3}]
+  // Parse "Eclesiastés 1, 2" -> [{book: "Eclesiástés", chapter: 1}, {book: "Eclesiástés", chapter: 2}]
+  for (const [bookName, slug] of Object.entries(FULL_BOOK_SLUGS)) {
+    if (reading.startsWith(bookName)) {
+      const rest = reading.slice(bookName.length).trim();
+      const rangeMatch = rest.match(/(\d+)\s+a\s+(\d+)/);
+      if (rangeMatch) {
+        const start = parseInt(rangeMatch[1]);
+        const end = parseInt(rangeMatch[2]);
+        const chapters = [];
+        for (let i = start; i <= end; i++) {
+          chapters.push({ book: slug, bookName, chapter: i });
+        }
+        return chapters;
+      }
+      const commaMatch = rest.match(/(\d+(?:\s*,\s*\d+)*)/);
+      if (commaMatch) {
+        return commaMatch[1].split(',').map(n => ({
+          book: slug,
+          bookName,
+          chapter: parseInt(n.trim()),
+        }));
+      }
+    }
+  }
+  return [];
+}
+
+// Build regex to match Bible references like "Luc. 7:12" or "1 Cor. 15:45"
+function buildRefRegex() {
+  const bookPatterns = Object.keys(bibleBooks)
+    .sort((a, b) => b.length - a.length)
+    .map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  return new RegExp(`((?:${bookPatterns})\\s+\\d+(?::\\d+[\\d,\\s\\-a-z]*)?)`, 'g');
+}
+
+const REF_REGEX = buildRefRegex();
+
+function parseRef(refText) {
+  for (const [abbr, info] of Object.entries(bibleBooks)) {
+    if (refText.startsWith(abbr)) {
+      const rest = refText.slice(abbr.length).trim();
+      const chapterMatch = rest.match(/^(\d+)/);
+      if (!chapterMatch) return null;
+      const chapter = parseInt(chapterMatch[1]);
+      const verseMatch = rest.match(/^\d+:(\d+)/);
+      const verse = verseMatch ? parseInt(verseMatch[1]) : null;
+      return { slug: info.slug, chapter, verse, abbr, num: info.num };
+    }
+  }
+  return null;
+}
+
+function RichText({ text, onOpenBible }) {
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  const regex = new RegExp(REF_REGEX.source, REF_REGEX.flags);
+
+  while ((match = regex.exec(text)) !== null) {
+    const refText = match[1];
+
+    if (lastIndex < match.index) {
+      parts.push({ type: "text", content: text.slice(lastIndex, match.index) });
+    }
+
+    const parsed = parseRef(refText);
+    if (parsed) {
+      parts.push({ type: "ref", content: refText, parsed });
+    } else {
+      parts.push({ type: "text", content: refText });
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: "text", content: text.slice(lastIndex) });
+  }
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.type === "ref" ? (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.preventDefault();
+              onOpenBible(part.parsed.slug, part.parsed.chapter, part.parsed.verse);
+            }}
+            className="inline transition-colors cursor-pointer"
+            style={{
+              color: "#d4af37",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(212,175,55,0.3)",
+              textUnderlineOffset: "2px",
+              background: "none",
+              border: "none",
+              padding: 0,
+              font: "inherit",
+            }}
+          >
+            {part.content}
+          </button>
+        ) : (
+          <span key={i}>{part.content}</span>
+        )
+      )}
+    </>
+  );
+}
+
+// Bible Reader component
+function BibleReader({ book, chapter, highlightVerse, onClose, onNavigate }) {
+  const [verses, setVerses] = useState([]);
+  const [title, setTitle] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const verseRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setVerses([]);
+    loadBibleData()
+      .then(bible => {
+        const key = normalizeSlug(book);
+        const bookData = bible[key];
+        if (!bookData) throw new Error('Libro no encontrado');
+        const chapterData = bookData[String(chapter)];
+        if (!chapterData) throw new Error('Capítulo no encontrado');
+        setVerses(chapterData.map(v => ({ num: v[0], text: v[1] })));
+        setTitle(`${key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ')} ${chapter}`);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [book, chapter]);
+
+  // Scroll to highlighted verse
+  useEffect(() => {
+    if (!loading && highlightVerse && verseRef.current) {
+      setTimeout(() => {
+        verseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+  }, [loading, highlightVerse]);
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Bible Header */}
+      <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-full hover:bg-[#1a1812] transition-colors text-[#8a7a50] hover:text-[#d4af37]"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div className="flex-1">
+          <div className="text-[10px] tracking-[0.3em] uppercase text-[#6a5a40] font-sans font-bold">
+            Biblia
+          </div>
+          <div className="text-[#d4af37] font-serif font-bold text-lg">
+            {title || `${book} ${chapter}`}
+          </div>
+        </div>
+      </div>
+
+      {/* Chapter navigation */}
+      <div className="flex items-center justify-between px-5 pb-3">
+        <button
+          onClick={() => onNavigate(book, chapter - 1, null)}
+          disabled={chapter <= 1}
+          className="px-3 py-1.5 rounded-lg text-xs font-sans transition-all text-[#8a7a50] hover:text-[#d4af37] hover:bg-[#1a1812] disabled:opacity-20 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft size={16} className="inline" /> Cap. {chapter - 1}
+        </button>
+        <span className="text-sm text-[#d4af37] font-bold font-sans">Capítulo {chapter}</span>
+        <button
+          onClick={() => onNavigate(book, chapter + 1, null)}
+          className="px-3 py-1.5 rounded-lg text-xs font-sans transition-all text-[#8a7a50] hover:text-[#d4af37] hover:bg-[#1a1812]"
+        >
+          Cap. {chapter + 1} <ChevronRight size={16} className="inline" />
+        </button>
+      </div>
+
+      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
+
+      {/* Verses */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5" style={{ WebkitOverflowScrolling: "touch" }}>
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader2 size={28} className="text-[#d4af37] animate-spin" />
+            <span className="text-sm text-[#6a5a40] font-sans">Cargando capítulo...</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-10">
+            <p className="text-[#6a5a40] text-sm font-sans">No se pudo cargar el capítulo.</p>
+          </div>
+        )}
+
+        {!loading && !error && verses.length > 0 && (
+          <div className="space-y-2">
+            {verses.map((v) => {
+              const isHighlighted = highlightVerse === v.num;
+              return (
+                <p
+                  key={v.num}
+                  ref={isHighlighted ? verseRef : null}
+                  className="text-sm sm:text-[15px] leading-relaxed font-serif transition-all"
+                  style={{
+                    color: isHighlighted ? "#e8dcc0" : "#a09070",
+                    background: isHighlighted ? "rgba(212,175,55,0.1)" : "transparent",
+                    borderLeft: isHighlighted ? "3px solid #d4af37" : "3px solid transparent",
+                    paddingLeft: "12px",
+                    paddingTop: "4px",
+                    paddingBottom: "4px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <sup className="text-[10px] font-sans font-bold text-[#d4af37] mr-1">{v.num}</sup>
+                  {v.text}
+                </p>
+              );
+            })}
+          </div>
+        )}
+
+        {!loading && !error && verses.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-[#6a5a40] text-sm font-sans">Este capítulo no está disponible.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Floating back button */}
+      <div className="px-5 py-3 border-t border-[#252318]">
+        <button
+          onClick={onClose}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-sans font-bold transition-all active:scale-95"
+          style={{
+            background: "rgba(212,175,55,0.1)",
+            color: "#d4af37",
+            border: "1px solid rgba(212,175,55,0.25)",
+          }}
+        >
+          <ArrowLeft size={16} />
+          Volver al texto del día
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function DailyReading() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("texto");
+  const [bibleView, setBibleView] = useState(null); // { book, chapter, verse }
+  const contentRef = useRef(null);
+
+  const key = getDateKey(currentDate);
+  const reading = dailyReadings[key];
+  const weeklyReading = getWeeklyReading(currentDate);
+  const weeklyChapters = weeklyReading ? parseReadingChapters(weeklyReading) : [];
+
+  const goToDay = (offset) => {
+    setCurrentDate(prev => {
+      const next = new Date(prev);
+      next.setDate(next.getDate() + offset);
+      if (next.getFullYear() !== 2026) return prev;
+      return next;
+    });
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  };
+
+  const openBible = useCallback((book, chapter, verse) => {
+    setBibleView({ book, chapter, verse });
+  }, []);
+
+  const closeBible = useCallback(() => {
+    setBibleView(null);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentDate(new Date());
+      setActiveTab("texto");
+      setBibleView(null);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl border shadow-lg transition-all hover:scale-105 active:scale-95"
+        style={{
+          background: "linear-gradient(135deg, #1a1812, #252218)",
+          borderColor: "#d4af37",
+          boxShadow: "0 4px 20px rgba(212,175,55,0.3)",
+          color: "#d4af37",
+        }}
+      >
+        <BookOpen size={20} />
+        <span className="text-sm font-sans font-bold tracking-wide">Texto del día</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setIsOpen(false)}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+      <div
+        className="relative w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        style={{
+          background: "#0d0c0a",
+          border: "1px solid #252318",
+          boxShadow: "0 -10px 60px rgba(212,175,55,0.15)",
+          animation: "reading-slide-up 0.4s ease-out",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <style>{`
+          @keyframes reading-slide-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+        `}</style>
+
+        {/* Show Bible Reader if active */}
+        {bibleView ? (
+          <BibleReader
+            book={bibleView.book}
+            chapter={bibleView.chapter}
+            highlightVerse={bibleView.verse}
+            onClose={closeBible}
+            onNavigate={(book, chapter, verse) => setBibleView({ book, chapter, verse })}
+          />
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-2">
+              <div className="flex items-center gap-2">
+                <BookOpen size={18} className="text-[#d4af37]" />
+                <span className="text-[10px] tracking-[0.3em] uppercase text-[#6a5a40] font-sans font-bold">
+                  Examinemos las Escrituras
+                </span>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-full hover:bg-[#1a1812] transition-colors text-[#6a5a40] hover:text-[#d4af37]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex mx-5 mt-2 mb-3 bg-[#11100c] rounded-xl p-1 border border-[#1e1c18]">
+              <button
+                onClick={() => { setActiveTab("texto"); if (contentRef.current) contentRef.current.scrollTop = 0; }}
+                className={`flex-1 py-2 text-xs font-sans font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                  activeTab === "texto"
+                    ? "bg-[#d4af37] text-[#131109] shadow-[0_0_10px_rgba(212,175,55,0.3)]"
+                    : "text-[#8a7a50] hover:text-[#d4af37]"
+                }`}
+              >
+                <BookOpen size={14} />
+                Texto del día
+              </button>
+              <button
+                onClick={() => { setActiveTab("lectura"); if (contentRef.current) contentRef.current.scrollTop = 0; }}
+                className={`flex-1 py-2 text-xs font-sans font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                  activeTab === "lectura"
+                    ? "bg-[#d4af37] text-[#131109] shadow-[0_0_10px_rgba(212,175,55,0.3)]"
+                    : "text-[#8a7a50] hover:text-[#d4af37]"
+                }`}
+              >
+                <BookMarked size={14} />
+                Lectura bíblica
+              </button>
+            </div>
+
+            {/* Date Navigation */}
+            <div className="flex items-center justify-between px-4 pb-3">
+              <button
+                onClick={() => goToDay(-1)}
+                className="p-2 rounded-full hover:bg-[#1a1812] transition-colors text-[#8a7a50] hover:text-[#d4af37]"
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <button onClick={goToToday} className="text-center">
+                <div className="text-base sm:text-lg text-[#d4af37] font-bold tracking-wide">
+                  {formatDate(currentDate)}
+                </div>
+                {currentDate.toDateString() !== new Date().toDateString() && (
+                  <div className="text-[9px] text-[#ff8c20] uppercase tracking-wider font-sans mt-0.5">
+                    Toca para ir a hoy
+                  </div>
+                )}
+              </button>
+              <button
+                onClick={() => goToDay(1)}
+                className="p-2 rounded-full hover:bg-[#1a1812] transition-colors text-[#8a7a50] hover:text-[#d4af37]"
+              >
+                <ChevronRight size={22} />
+              </button>
+            </div>
+
+            <div className="mx-5 h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
+
+            {/* Content */}
+            <div ref={contentRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-5" style={{ WebkitOverflowScrolling: "touch" }}>
+
+              {/* TAB: Texto del día */}
+              {activeTab === "texto" && (
+                <>
+                  {reading ? (
+                    <>
+                      <div
+                        className="rounded-2xl p-4 sm:p-5"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.03))",
+                          border: "1px solid rgba(212,175,55,0.15)",
+                        }}
+                      >
+                        <div className="text-[9px] tracking-[0.2em] uppercase text-[#8a7a50] font-sans mb-2">
+                          Texto del día
+                        </div>
+                        <p className="text-[#e8dcc0] text-base sm:text-lg leading-relaxed font-serif italic">
+                          <RichText text={reading.text} onOpenBible={openBible} />
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="text-[9px] tracking-[0.2em] uppercase text-[#8a7a50] font-sans">
+                          Comentario
+                        </div>
+                        <p className="text-[#b8a880] text-sm sm:text-[15px] leading-relaxed font-serif">
+                          <RichText text={reading.commentary} onOpenBible={openBible} />
+                        </p>
+                      </div>
+
+                      {reading.source && (
+                        <div className="pt-3 border-t border-[#252318]">
+                          <p className="text-[11px] text-[#5a5040] font-sans italic">
+                            {reading.source}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-[#6a5a40] text-sm font-sans">
+                        No hay lectura disponible para este día.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* TAB: Lectura bíblica */}
+              {activeTab === "lectura" && (
+                <>
+                  {weeklyReading ? (
+                    <div className="space-y-5">
+                      <div
+                        className="rounded-2xl p-5 sm:p-6 text-center"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.03))",
+                          border: "1px solid rgba(212,175,55,0.2)",
+                        }}
+                      >
+                        <div className="text-[9px] tracking-[0.3em] uppercase text-[#8a7a50] font-sans mb-3">
+                          Lectura de la semana
+                        </div>
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                          <BookMarked size={24} className="text-[#d4af37]" />
+                          <p className="text-[#e8dcc0] text-xl sm:text-2xl font-serif font-bold">
+                            {weeklyReading}
+                          </p>
+                        </div>
+                        <div className="text-[10px] text-[#6a5a40] font-sans tracking-wide mb-4">
+                          Reunión Vida y Ministerio Cristianos
+                        </div>
+
+                        {/* Chapter buttons */}
+                        {weeklyChapters.length > 0 && (
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            {weeklyChapters.map((ch, i) => (
+                              <button
+                                key={i}
+                                onClick={() => openBible(ch.book, ch.chapter, null)}
+                                className="px-4 py-2 rounded-xl text-sm font-sans font-bold transition-all hover:scale-105 active:scale-95"
+                                style={{
+                                  background: "#d4af37",
+                                  color: "#131109",
+                                  boxShadow: "0 4px 15px rgba(212,175,55,0.3)",
+                                }}
+                              >
+                                <BookOpen size={14} className="inline mr-1.5" />
+                                {weeklyChapters.length === 1 ? "Leer" : `Cap. ${ch.chapter}`}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="text-[9px] tracking-[0.2em] uppercase text-[#8a7a50] font-sans">
+                          Programa completo de lectura
+                        </div>
+                        <div className="space-y-1.5 max-h-[40vh] overflow-y-auto">
+                          {bibleSchedule.map((entry, i) => {
+                            const entryDate = new Date(2026, entry.month, entry.day);
+                            const isCurrent = weeklyReading === entry.reading;
+                            const isPast = entryDate < new Date() && !isCurrent;
+                            const chapters = parseReadingChapters(entry.reading);
+                            const firstChapter = chapters[0];
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => firstChapter && openBible(firstChapter.book, firstChapter.chapter, null)}
+                                className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all w-full text-left ${
+                                  isCurrent ? "border" : ""
+                                } hover:bg-[#1a1812]`}
+                                style={{
+                                  background: isCurrent ? "rgba(212,175,55,0.1)" : "transparent",
+                                  borderColor: isCurrent ? "rgba(212,175,55,0.3)" : "transparent",
+                                  opacity: isPast ? 0.4 : 1,
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isPast && <span className="text-[#6a5a40] text-xs">✓</span>}
+                                  {isCurrent && <span className="text-[#d4af37] text-xs">▸</span>}
+                                  <span className={`text-xs font-sans ${isCurrent ? "text-[#d4af37] font-bold" : "text-[#8a7a50]"}`}>
+                                    {MONTH_NAMES[entry.month]} {entry.day}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-xs font-serif ${isCurrent ? "text-[#e8dcc0] font-bold" : "text-[#6a5a40]"}`}>
+                                    {entry.reading}
+                                  </span>
+                                  <BookOpen size={10} className="text-[#5a5040]" />
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-[#6a5a40] text-sm font-sans">
+                        No hay lectura asignada para esta fecha.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Bottom Navigation */}
+            <div className="flex items-center justify-between px-5 py-4 border-t border-[#252318]">
+              <button
+                onClick={() => goToDay(-1)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-sans transition-all text-[#8a7a50] hover:text-[#d4af37] hover:bg-[#1a1812]"
+              >
+                <ChevronLeft size={16} />
+                Anterior
+              </button>
+              <div className="flex items-center gap-1.5 text-[10px] text-[#5a5040] font-sans">
+                <Calendar size={12} />
+                {currentDate.getDate()}/{currentDate.getMonth() + 1}
+              </div>
+              <button
+                onClick={() => goToDay(1)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-sans font-bold transition-all text-[#d4af37] hover:bg-[#1a1812]"
+              >
+                Siguiente
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
