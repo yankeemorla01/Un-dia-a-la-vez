@@ -169,148 +169,108 @@ function RichText({ text, onOpenBible }) {
   );
 }
 
-// Bible Reader component
-function BibleReader({ book, chapter, highlightVerse, onClose, onNavigate }) {
-  const [verses, setVerses] = useState([]);
+// Inline verse popup - shows just the referenced verse(s) as a compact popup
+function VersePopup({ book, chapter, verse, onClose }) {
+  const [text, setText] = useState("");
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const verseRef = useRef(null);
-  const scrollRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
-    setError(null);
-    setVerses([]);
     loadBibleData()
       .then(bible => {
         const key = normalizeSlug(book);
         const bookData = bible[key];
-        if (!bookData) throw new Error('Libro no encontrado');
+        if (!bookData) { setText("Libro no encontrado"); setLoading(false); return; }
         const chapterData = bookData[String(chapter)];
-        if (!chapterData) throw new Error('Capítulo no encontrado');
-        setVerses(chapterData.map(v => ({ num: v[0], text: v[1] })));
-        setTitle(`${key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ')} ${chapter}`);
+        if (!chapterData) { setText("Capítulo no encontrado"); setLoading(false); return; }
+
+        const bookTitle = key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
+
+        if (verse) {
+          const found = chapterData.find(v => v[0] === verse);
+          setText(found ? found[1] : "Versículo no encontrado");
+          setTitle(`${bookTitle} ${chapter}:${verse}`);
+        } else {
+          // Show all verses of the chapter as paragraphs
+          const allText = chapterData.map(v => `${v[0]} ${v[1]}`).join('\n');
+          setText(allText);
+          setTitle(`${bookTitle} ${chapter}`);
+        }
         setLoading(false);
       })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [book, chapter]);
-
-  // Scroll to highlighted verse
-  useEffect(() => {
-    if (!loading && highlightVerse && verseRef.current) {
-      setTimeout(() => {
-        verseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200);
-    }
-  }, [loading, highlightVerse]);
+      .catch(() => { setText("Error al cargar"); setLoading(false); });
+  }, [book, chapter, verse]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Bible Header */}
-      <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-full hover:bg-[#1a1812] transition-colors text-[#8a7a50] hover:text-[#d4af37]"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1">
-          <div className="text-[10px] tracking-[0.3em] uppercase text-[#6a5a40] font-sans font-bold">
-            Biblia
+    <div
+      className="absolute inset-0 z-10 flex items-end sm:items-center justify-center"
+      onClick={onClose}
+      style={{ animation: "verse-fade-in 0.2s ease-out" }}
+    >
+      <style>{`
+        @keyframes verse-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes verse-slide-up {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
+      <div
+        className="relative mx-4 mb-4 sm:mb-0 w-full sm:max-w-md rounded-2xl overflow-hidden"
+        style={{
+          background: "#131109",
+          border: "1px solid rgba(212,175,55,0.25)",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 20px rgba(212,175,55,0.1)",
+          animation: "verse-slide-up 0.25s ease-out",
+          maxHeight: "60vh",
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#252318]">
+          <div className="flex items-center gap-2">
+            <BookOpen size={14} className="text-[#d4af37]" />
+            <span className="text-sm font-serif font-bold text-[#d4af37]">
+              {loading ? "Cargando..." : title}
+            </span>
           </div>
-          <div className="text-[#d4af37] font-serif font-bold text-lg">
-            {title || `${book} ${chapter}`}
-          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-[#1a1812] transition-colors text-[#6a5a40] hover:text-[#d4af37]"
+          >
+            <X size={16} />
+          </button>
         </div>
-      </div>
 
-      {/* Chapter navigation */}
-      <div className="flex items-center justify-between px-5 pb-3">
-        <button
-          onClick={() => onNavigate(book, chapter - 1, null)}
-          disabled={chapter <= 1}
-          className="px-3 py-1.5 rounded-lg text-xs font-sans transition-all text-[#8a7a50] hover:text-[#d4af37] hover:bg-[#1a1812] disabled:opacity-20 disabled:cursor-not-allowed"
-        >
-          <ChevronLeft size={16} className="inline" /> Cap. {chapter - 1}
-        </button>
-        <span className="text-sm text-[#d4af37] font-bold font-sans">Capítulo {chapter}</span>
-        <button
-          onClick={() => onNavigate(book, chapter + 1, null)}
-          className="px-3 py-1.5 rounded-lg text-xs font-sans transition-all text-[#8a7a50] hover:text-[#d4af37] hover:bg-[#1a1812]"
-        >
-          Cap. {chapter + 1} <ChevronRight size={16} className="inline" />
-        </button>
-      </div>
-
-      <div className="mx-5 h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
-
-      {/* Verses */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5" style={{ WebkitOverflowScrolling: "touch" }}>
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 size={28} className="text-[#d4af37] animate-spin" />
-            <span className="text-sm text-[#6a5a40] font-sans">Cargando capítulo...</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-10">
-            <p className="text-[#6a5a40] text-sm font-sans">No se pudo cargar el capítulo.</p>
-          </div>
-        )}
-
-        {!loading && !error && verses.length > 0 && (
-          <div className="space-y-2">
-            {verses.map((v) => {
-              const isHighlighted = highlightVerse === v.num;
-              return (
-                <p
-                  key={v.num}
-                  ref={isHighlighted ? verseRef : null}
-                  className="text-sm sm:text-[15px] leading-relaxed font-serif transition-all"
-                  style={{
-                    color: isHighlighted ? "#e8dcc0" : "#a09070",
-                    background: isHighlighted ? "rgba(212,175,55,0.1)" : "transparent",
-                    borderLeft: isHighlighted ? "3px solid #d4af37" : "3px solid transparent",
-                    paddingLeft: "12px",
-                    paddingTop: "4px",
-                    paddingBottom: "4px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <sup className="text-[10px] font-sans font-bold text-[#d4af37] mr-1">{v.num}</sup>
-                  {v.text}
-                </p>
-              );
-            })}
-          </div>
-        )}
-
-        {!loading && !error && verses.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-[#6a5a40] text-sm font-sans">Este capítulo no está disponible.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Floating back button */}
-      <div className="px-5 py-3 border-t border-[#252318]">
-        <button
-          onClick={onClose}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-sans font-bold transition-all active:scale-95"
-          style={{
-            background: "rgba(212,175,55,0.1)",
-            color: "#d4af37",
-            border: "1px solid rgba(212,175,55,0.25)",
-          }}
-        >
-          <ArrowLeft size={16} />
-          Volver al texto del día
-        </button>
+        {/* Verse text */}
+        <div className="px-4 py-4 overflow-y-auto" style={{ maxHeight: "calc(60vh - 52px)", WebkitOverflowScrolling: "touch" }}>
+          {loading ? (
+            <div className="flex justify-center py-4">
+              <Loader2 size={20} className="text-[#d4af37] animate-spin" />
+            </div>
+          ) : verse ? (
+            <p className="text-[#e8dcc0] text-[15px] leading-relaxed font-serif">
+              <sup className="text-[10px] font-sans font-bold text-[#d4af37] mr-1">{verse}</sup>
+              {text}
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {text.split('\n').map((line, i) => {
+                const numMatch = line.match(/^(\d+)\s(.+)/);
+                return numMatch ? (
+                  <p key={i} className="text-sm leading-relaxed font-serif text-[#a09070]">
+                    <sup className="text-[10px] font-sans font-bold text-[#d4af37] mr-1">{numMatch[1]}</sup>
+                    {numMatch[2]}
+                  </p>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -398,17 +358,16 @@ export default function DailyReading() {
           }
         `}</style>
 
-        {/* Show Bible Reader if active */}
-        {bibleView ? (
-          <BibleReader
+        {/* Verse popup overlay */}
+        {bibleView && (
+          <VersePopup
             book={bibleView.book}
             chapter={bibleView.chapter}
-            highlightVerse={bibleView.verse}
+            verse={bibleView.verse}
             onClose={closeBible}
-            onNavigate={(book, chapter, verse) => setBibleView({ book, chapter, verse })}
           />
-        ) : (
-          <>
+        )}
+
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-2">
               <div className="flex items-center gap-2">
