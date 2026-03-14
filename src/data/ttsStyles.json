@@ -1,0 +1,1462 @@
+{
+  "2026-0-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-6": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-8": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-10": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-12": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-0-14": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-0-15": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-0-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-17": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-19": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-20": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-22": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-28": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-0-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-0-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-0-31": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-2": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-1-3": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-1-4": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-1-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-6": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-9": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-1-10": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-12": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-13": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-1-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-15": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-1-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-1-17": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-18": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-20": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-1-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-23": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-1-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-1-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-1-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-1-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-2-2": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-6": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-7": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-2-8": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-2-9": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-12": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-2-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-2-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-16": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-17": {
+    "textStyle": "whispering",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-19": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-2-20": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-2-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-23": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-26": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-2-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-2-29": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-2-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-2-31": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-2": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-3-3": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-4": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-3-5": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-6": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-3-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-9": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-3-10": {
+    "textStyle": "whispering",
+    "commentaryStyle": "sad"
+  },
+  "2026-3-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-3-12": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-3-13": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-3-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-17": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-18": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-3-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-20": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-22": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-3-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-25": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-26": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-3-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-3-30": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-4-1": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-4-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-5": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-4-6": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-9": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-4-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-12": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-13": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-4-14": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-4-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-17": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-4-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-20": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-22": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-4-29": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-4-30": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-4-31": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-5-1": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-5-2": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-5-3": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-4": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-5-5": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-6": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-5-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-10": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-5-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-12": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-5-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-5-14": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-15": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-5-16": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-17": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-18": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-20": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-5-21": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-5-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-5-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-5-29": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-5-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-6": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-6-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-10": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-12": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-13": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-6-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-6-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-17": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-18": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-20": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-22": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-6-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-6-26": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-6-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-29": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-30": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-6-31": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-1": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-7-2": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-7-3": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-7-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-6": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-7-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-7-10": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-7-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-12": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-16": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-17": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-7-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-20": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-7-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-26": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-7-27": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-7-31": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-8-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-3": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-8-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-6": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-8-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-8": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-11": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-12": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-8-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-15": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-8-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-17": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-8-18": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-19": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-20": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-8-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-8-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-27": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-28": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-8-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-2": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-3": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-9-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-5": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-6": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-9-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-11": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-12": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-9-13": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-14": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-16": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-9-17": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-18": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-9-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-20": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-25": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-9-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-9-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-30": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-9-31": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-4": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-6": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "excited"
+  },
+  "2026-10-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-8": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-10-9": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-11": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-10-12": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-14": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-10-15": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-17": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-20": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-24": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-10-26": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-28": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-10-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-10-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-1": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-2": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-3": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-4": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-5": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-6": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-7": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-8": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-9": {
+    "textStyle": null,
+    "commentaryStyle": "chat"
+  },
+  "2026-11-10": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-11": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-12": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-13": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-14": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-15": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-16": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-17": {
+    "textStyle": "whispering",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-18": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-19": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-20": {
+    "textStyle": "sad",
+    "commentaryStyle": "sad"
+  },
+  "2026-11-21": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-22": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-23": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "cheerful"
+  },
+  "2026-11-24": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-25": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-26": {
+    "textStyle": "sad",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-27": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-28": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-29": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-30": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  },
+  "2026-11-31": {
+    "textStyle": "cheerful",
+    "commentaryStyle": "chat"
+  }
+}

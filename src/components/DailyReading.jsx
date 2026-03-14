@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { BookOpen, ChevronLeft, ChevronRight, X, Calendar, BookMarked, Loader2 } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, X, Calendar, BookMarked, Loader2, Volume2, Square, Loader } from "lucide-react";
 import dailyReadings from "../data/dailyReadings.json";
 import bibleSchedule from "../data/bibleReadingSchedule.json";
 import bibleBooks from "../data/bibleBooks.json";
+import ttsStyles from "../data/ttsStyles.json";
 
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const FULL_WEEK_DAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -276,12 +277,144 @@ function VersePopup({ book, chapter, verse, onClose }) {
   );
 }
 
+// Map abbreviations to full book names for TTS
+const ABBR_TO_FULL = {
+  "Gén.": "Génesis", "Éx.": "Éxodo", "Lev.": "Levítico", "Núm.": "Números",
+  "Deut.": "Deuteronomio", "Jos.": "Josué", "Jue.": "Jueces",
+  "1 Sam.": "1 Samuel", "2 Sam.": "2 Samuel", "1 Rey.": "1 Reyes", "2 Rey.": "2 Reyes",
+  "1 Crón.": "1 Crónicas", "2 Crón.": "2 Crónicas", "Esd.": "Esdras", "Neh.": "Nehemías",
+  "Est.": "Ester", "Sal.": "Salmos", "Prov.": "Proverbios", "Ecl.": "Eclesiastés",
+  "Cant.": "Cantar de los Cantares", "Is.": "Isaías", "Jer.": "Jeremías",
+  "Lam.": "Lamentaciones", "Ezeq.": "Ezequiel", "Dan.": "Daniel", "Os.": "Oseas",
+  "Abd.": "Abdías", "Jon.": "Jonás", "Miq.": "Miqueas", "Nah.": "Nahúm",
+  "Hab.": "Habacuc", "Sof.": "Sofonías", "Zac.": "Zacarías", "Mal.": "Malaquías",
+  "Mat.": "Mateo", "Mar.": "Marcos", "Luc.": "Lucas", "Hech.": "Hechos",
+  "Rom.": "Romanos", "1 Cor.": "1 Corintios", "2 Cor.": "2 Corintios",
+  "Gál.": "Gálatas", "Efes.": "Efesios", "Filip.": "Filipenses", "Col.": "Colosenses",
+  "1 Tes.": "1 Tesalonicenses", "2 Tes.": "2 Tesalonicenses",
+  "1 Tim.": "1 Timoteo", "2 Tim.": "2 Timoteo", "Filem.": "Filemón",
+  "Heb.": "Hebreos", "Sant.": "Santiago", "1 Ped.": "1 Pedro", "2 Ped.": "2 Pedro",
+  "1 Juan": "1 Juan", "2 Juan": "2 Juan", "3 Juan": "3 Juan",
+  "Jud.": "Judas", "Apoc.": "Apocalipsis",
+};
+
+function expandAbbreviations(text) {
+  let result = text;
+  // Sort by length descending so "1 Cor." matches before "Cor." etc.
+  const sorted = Object.entries(ABBR_TO_FULL).sort((a, b) => b[0].length - a[0].length);
+  for (const [abbr, full] of sorted) {
+    result = result.replaceAll(abbr, full);
+  }
+  return result;
+}
+
+const VOICE_FEMALE = "es-MX-DaliaNeural";
+const VOICE_MALE = "es-MX-JorgeNeural";
+
+function useTTS() {
+  const [ttsState, setTtsState] = useState("idle"); // idle | loading | playing
+  const audioRef = useRef(null);
+  const queueRef = useRef([]);
+
+  const stop = useCallback(() => {
+    queueRef.current = [];
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
+    setTtsState("idle");
+  }, []);
+
+  const fetchAudio = useCallback(async (text, voice, style) => {
+    const body = { text, voice };
+    if (style) body.style = style;
+    const res = await fetch(import.meta.env.VITE_TTS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": import.meta.env.VITE_TTS_API_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error("TTS error");
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  }, []);
+
+  const playUrl = useCallback((url) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        resolve();
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        reject(new Error("Audio playback error"));
+      };
+      audio.play().catch(reject);
+    });
+  }, []);
+
+  const play = useCallback(async (segments) => {
+    // segments: [{ text, voice, style }, ...]
+    stop();
+    setTtsState("loading");
+    const expanded = segments.map(s => ({
+      text: expandAbbreviations(s.text),
+      voice: s.voice,
+      style: s.style,
+    }));
+    queueRef.current = expanded;
+
+    try {
+      // Pre-fetch all segments in parallel
+      const urlPromises = expanded.map(s => fetchAudio(s.text, s.voice, s.style));
+      // Wait for at least the first one to start playing immediately
+      const firstUrl = await urlPromises[0];
+      if (queueRef.current.length === 0) return; // stopped
+      setTtsState("playing");
+      // Play first while others keep loading
+      const playFirst = playUrl(firstUrl);
+      // Wait for remaining fetches in background
+      const remainingUrls = await Promise.all(urlPromises.slice(1));
+      await playFirst;
+      // Play the rest sequentially (already pre-fetched)
+      for (const url of remainingUrls) {
+        if (queueRef.current.length === 0) {
+          URL.revokeObjectURL(url);
+          break;
+        }
+        await playUrl(url);
+      }
+    } catch {
+      // stopped or error
+    }
+    if (queueRef.current.length > 0) {
+      queueRef.current = [];
+      setTtsState("idle");
+    }
+  }, [stop, fetchAudio, playUrl]);
+
+  useEffect(() => {
+    return () => stop();
+  }, [stop]);
+
+  return { ttsState, play, stop };
+}
+
 export default function DailyReading() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("texto");
   const [bibleView, setBibleView] = useState(null); // { book, chapter, verse }
   const contentRef = useRef(null);
+  const { ttsState, play: ttsPlay, stop: ttsStop } = useTTS();
 
   const key = getDateKey(currentDate);
   const reading = dailyReadings[key];
@@ -289,6 +422,7 @@ export default function DailyReading() {
   const weeklyChapters = weeklyReading ? parseReadingChapters(weeklyReading) : [];
 
   const goToDay = (offset) => {
+    ttsStop();
     setCurrentDate(prev => {
       const next = new Date(prev);
       next.setDate(next.getDate() + offset);
@@ -316,8 +450,10 @@ export default function DailyReading() {
       setCurrentDate(new Date());
       setActiveTab("texto");
       setBibleView(null);
+    } else {
+      ttsStop();
     }
-  }, [isOpen]);
+  }, [isOpen, ttsStop]);
 
   if (!isOpen) {
     return (
@@ -453,8 +589,33 @@ export default function DailyReading() {
                           border: "1px solid rgba(212,175,55,0.15)",
                         }}
                       >
-                        <div className="text-[9px] tracking-[0.2em] uppercase text-[#8a7a50] font-sans mb-2">
-                          Texto del día
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-[9px] tracking-[0.2em] uppercase text-[#8a7a50] font-sans">
+                            Texto del día
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (ttsState === "playing" || ttsState === "loading") {
+                                ttsStop();
+                              } else if (ttsState === "idle" && reading) {
+                                const dayStyles = ttsStyles[key] || {};
+                                ttsPlay([
+                                  { text: reading.text, voice: VOICE_FEMALE, style: dayStyles.textStyle },
+                                  { text: reading.commentary, voice: VOICE_MALE, style: dayStyles.commentaryStyle },
+                                ]);
+                              }
+                            }}
+                            className="p-1.5 rounded-full transition-all hover:bg-[#1a1812]"
+                            title={ttsState === "playing" ? "Detener" : "Escuchar"}
+                          >
+                            {ttsState === "loading" ? (
+                              <Loader size={16} className="text-[#d4af37] animate-spin" />
+                            ) : ttsState === "playing" ? (
+                              <Square size={16} className="text-[#d4af37]" />
+                            ) : (
+                              <Volume2 size={16} className="text-[#8a7a50] hover:text-[#d4af37]" />
+                            )}
+                          </button>
                         </div>
                         <p className="text-[#e8dcc0] text-base sm:text-lg leading-relaxed font-serif italic">
                           <RichText text={reading.text} onOpenBible={openBible} />

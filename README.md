@@ -1,258 +1,262 @@
-# Un Dia a la Vez / One Day at a Time / Un Jour a la Fois
+# Un Dia a la Vez
+
+Una aplicacion web para construir habitos espirituales diarios. Incluye un calendario interactivo de habitos, lectura biblica diaria con texto y comentario, y lectura en voz alta con inteligencia artificial.
+
+Disponible en **espanol**.
 
 ---
 
-## Que es esto? / What is this? / Qu'est-ce que c'est?
+## Funcionalidades
 
-**ES** - Una app para seguir habitos diarios. Marca cada dia que cumples tu meta y construye rachas. Simple, visual, satisfactorio.
+### Calendario de habitos
 
-**EN** - A daily habit tracker app. Mark each day you complete your goal and build streaks. Simple, visual, satisfying.
+- **Meta personalizable** — Haz clic en el titulo para cambiar tu meta
+- **3 vistas** — Ano completo, mes o semana
+- **Rachas** — Cuenta dias consecutivos automaticamente
+- **9 medallas** — Desde 1 dia hasta 365 dias (semilla, fuego, estrella, trofeo...)
+- **Efectos visuales** — Particulas y animaciones al marcar un dia
+- **Sonidos** — Sonido al marcar y desmarcar dias
+- **Persistencia** — Tus datos se guardan en base de datos
 
-**FR** - Une application de suivi d'habitudes quotidiennes. Marquez chaque jour ou vous atteignez votre objectif et construisez des series. Simple, visuel, satisfaisant.
+### Texto del dia (Examinemos las Escrituras)
+
+- **365 textos diarios** — Un texto biblico y comentario para cada dia del ano
+- **Lectura biblica semanal** — Programa completo de lectura con navegacion por capitulos
+- **Referencias interactivas** — Toca cualquier cita biblica (ej. Luc. 13:6) para ver el versiculo en un popup
+- **Navegacion por fechas** — Avanza o retrocede entre dias, toca la fecha para volver a hoy
+
+### Lectura en voz alta con IA
+
+- **Dos voces** — Voz femenina para el texto del dia, voz masculina para el comentario
+- **Estilos emocionales inteligentes** — Cada dia tiene un analisis de tono (alegre, reflexivo, motivacional, solemne) que ajusta automaticamente el estilo de la voz
+- **Nombres completos** — Las abreviaturas biblicas se expanden automaticamente (Luc. → Lucas, Mat. → Mateo, etc.)
+- **Reproduccion fluida** — Ambos audios se descargan en paralelo para que la transicion entre voces sea instantanea
+- **Controles simples** — Un boton para reproducir/detener, se detiene automaticamente al cambiar de dia
 
 ---
 
-## Como se ve / How it looks / Apercu
+## Como se ve
 
 ```
   ┌─────────────────────────────────┐
-  │       Mi Meta Diaria            │  <-- Meta editable / Editable goal
+  │       Mi Meta Diaria            │  ← Meta editable
   │       Un dia a la vez           │
   │                                 │
-  │   12 Logrados  3 Racha  Medal   │  <-- Estadisticas / Stats
-  │   ▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░   │  <-- Progreso anual / Year progress
+  │   12 Logrados  3 Racha  Medal   │  ← Estadisticas
+  │   ▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░   │  ← Progreso anual
   │                                 │
-  │   [ Ano ]  [ Mes ]  [ Semana ]  │  <-- Vistas / Views
+  │   [ Ano ]  [ Mes ]  [ Semana ]  │  ← Vistas
   │                                 │
   │    D  L  M  M  J  V  S         │
   │          1  2  3  4  5         │
   │    6  7  8  9  10 11 12        │
-  │   13 14 ██ ██ ██ 18 19        │  <-- Dias marcados / Marked days
+  │   13 14 ██ ██ ██ 18 19        │  ← Dias marcados
   │   20 21 ██ ██ ██ 25 26        │
   │   27 28 29 30 31              │
   │                                 │
-  │   Medallas: seed fire star ...  │  <-- Recompensas / Rewards
+  │   Medallas: 🌱 🔥 ⭐ ...       │  ← Recompensas
+  │                                 │
+  │          [ Texto del dia 📖 ]   │  ← Lectura diaria
   └─────────────────────────────────┘
 ```
 
 ---
 
-## Funcionalidades / Features / Fonctionnalites
+## Medallas
 
-### ES - Espanol
-
-- **Meta personalizable** - Haz clic en el titulo para cambiar tu meta
-- **3 vistas** - Ano completo, mes o semana
-- **Rachas** - Cuenta dias consecutivos automaticamente
-- **9 medallas** - Desde 1 dia hasta 365 dias
-- **Efectos visuales** - Particulas y animaciones al marcar un dia
-- **Sonidos** - Sonido magico al marcar, sonido suave al desmarcar
-- **Persistencia en base de datos** - Tus datos se guardan en PostgreSQL, no se pierden
-- **Dia de hoy resaltado** - Siempre sabes que dia es con un borde brillante
-
-### EN - English
-
-- **Customizable goal** - Click the title to change your goal
-- **3 views** - Full year, month, or week
-- **Streaks** - Automatically counts consecutive days
-- **9 medals** - From 1 day to 365 days
-- **Visual effects** - Particles and animations when marking a day
-- **Sounds** - Magic chime when marking, soft sound when unmarking
-- **Database persistence** - Your data is saved in PostgreSQL, never lost
-- **Today highlighted** - Always know what day it is with a glowing border
-
-### FR - Francais
-
-- **Objectif personnalisable** - Cliquez sur le titre pour changer votre objectif
-- **3 vues** - Annee complete, mois ou semaine
-- **Series** - Compte automatiquement les jours consecutifs
-- **9 medailles** - De 1 jour a 365 jours
-- **Effets visuels** - Particules et animations lors du marquage d'un jour
-- **Sons** - Carillon magique au marquage, son doux au demarquage
-- **Persistance en base de donnees** - Vos donnees sont sauvegardees dans PostgreSQL
-- **Aujourd'hui en surbrillance** - Sachez toujours quel jour il est
+| Dias | Medalla | Descripcion |
+|------|---------|-------------|
+| 1    | Semilla | Primer paso |
+| 3    | Fuego   | 3 dias seguidos |
+| 7    | Estrella | Una semana |
+| 14   | Trofeo  | Dos semanas |
+| 30   | Brillo  | Un mes |
+| 60   | Gema    | Dos meses |
+| 100  | Cohete  | 100 dias |
+| 180  | Arcoiris | Medio ano |
+| 365  | Corona  | Un ano entero |
 
 ---
 
-## Medallas / Medals / Medailles
+## Instalacion
 
-| Dias / Days / Jours | Medalla | ES | EN | FR |
-|---|---|---|---|---|
-| 1 | seed | Primer paso | First step | Premier pas |
-| 3 | fire | 3 dias seguidos | 3 days straight | 3 jours consecutifs |
-| 7 | star | Una semana | One week | Une semaine |
-| 14 | trophy | Dos semanas | Two weeks | Deux semaines |
-| 30 | glowing star | Un mes | One month | Un mois |
-| 60 | gem | Dos meses | Two months | Deux mois |
-| 100 | rocket | 100 dias | 100 days | 100 jours |
-| 180 | rainbow | Medio ano | Half year | Six mois |
-| 365 | crown | Un ano entero | A full year | Une annee entiere |
-
----
-
-## Como instalar / How to install / Comment installer
-
-### Requisitos / Requirements / Prerequis
+### Requisitos
 
 - Node.js 18+
-- PostgreSQL (una base de datos existente o nueva)
+- PostgreSQL
 
-### Pasos / Steps / Etapes
-
-**1. Clonar / Clone / Cloner**
+### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/un-dia-a-la-vez.git
-cd un-dia-a-la-vez
+git clone https://github.com/yankeemorla01/Un-dia-a-la-vez.git
+cd Un-dia-a-la-vez
 ```
 
-**2. Instalar dependencias / Install dependencies / Installer les dependances**
+### 2. Instalar dependencias
 
 ```bash
 npm install
 ```
 
-**3. Configurar base de datos / Configure database / Configurer la base de donnees**
+### 3. Configurar variables de entorno
 
-Crear un archivo `.env` en la raiz del proyecto:
+Crea un archivo `.env` en la raiz del proyecto:
 
 ```env
-DATABASE_URL=postgresql://usuario:contrasena@host:puerto/nombre_db
+# Base de datos PostgreSQL
+MONGODB_URI=postgresql://usuario:contrasena@host:puerto/nombre_db
+
+# Text-to-Speech (opcional, para lectura en voz alta)
+VITE_TTS_API_URL=tu_url_de_api_tts
+VITE_TTS_API_KEY=tu_api_key_tts
 ```
 
-Las tablas se crean automaticamente al iniciar el servidor. No necesitas hacer nada mas.
+> **Nota sobre TTS:** La lectura en voz alta usa una API de Text-to-Speech compatible con voces neuronales de Microsoft Azure (como `es-MX-DaliaNeural` y `es-MX-JorgeNeural`). Puedes usar cualquier API que acepte `{ text, voice, style }` como body y devuelva audio. Si no configuras estas variables, la app funciona perfectamente sin audio.
 
-The tables are created automatically when the server starts. No additional setup needed.
+### 4. Iniciar la aplicacion
 
-Les tables sont creees automatiquement au demarrage du serveur. Aucune configuration supplementaire.
-
-**4. Iniciar / Start / Demarrer**
-
-Necesitas 2 terminales / You need 2 terminals / Vous avez besoin de 2 terminaux:
+Necesitas 2 terminales:
 
 ```bash
-# Terminal 1 - Backend API
+# Terminal 1 — Backend
 npm run server
 
-# Terminal 2 - Frontend
+# Terminal 2 — Frontend
 npm run dev
 ```
 
-**5. Abrir / Open / Ouvrir**
+### 5. Abrir
 
-Ir a `http://localhost:5173` en tu navegador.
+Ve a `http://localhost:5173` en tu navegador.
 
 ---
 
-## Estructura del proyecto / Project structure / Structure du projet
+## Estructura del proyecto
 
 ```
 un-dia-a-la-vez/
-├── .env                  # Credenciales (NO se sube a git)
-├── .gitignore            # Archivos ignorados por git
-├── server.js             # API backend (Express + PostgreSQL)
-├── index.html            # HTML principal
-├── vite.config.js        # Configuracion de Vite + Tailwind
-├── package.json          # Dependencias y scripts
+├── .env                          # Variables de entorno (NO se sube a git)
+├── .gitignore
+├── server.js                     # API backend (Express + PostgreSQL)
+├── index.html
+├── vite.config.js
+├── package.json
+├── vercel.json                   # Configuracion para deploy en Vercel
+│
+├── api/                          # Serverless functions (Vercel)
+│   ├── _db.js                    # Conexion a base de datos
+│   ├── marked.js                 # API dias marcados
+│   ├── settings.js               # API configuracion
+│   └── sync.js                   # API sincronizacion
+│
+├── scripts/
+│   ├── jwpub_extract.py          # Extractor de datos biblicos
+│   └── analyze_tts_styles.cjs    # Analizador de estilos emocionales para TTS
+│
 └── src/
-    ├── main.jsx          # Punto de entrada React
-    ├── index.css         # Estilos globales (Tailwind)
-    ├── App.jsx           # Componente raiz
-    └── components/
-        └── EveryDayCalendar.jsx  # Componente principal
+    ├── main.jsx
+    ├── index.css
+    ├── App.jsx
+    ├── components/
+    │   ├── EveryDayCalendar.jsx   # Calendario de habitos
+    │   └── DailyReading.jsx       # Texto del dia + TTS
+    └── data/
+        ├── dailyReadings.json     # 365 textos diarios con comentarios
+        ├── bibleReadingSchedule.json  # Programa de lectura semanal
+        ├── bibleBooks.json        # Mapa de abreviaturas biblicas
+        └── ttsStyles.json         # Estilos emocionales por dia (generado)
 ```
 
 ---
 
-## Base de datos / Database / Base de donnees
+## Como funciona el TTS inteligente
 
-Se crean 2 tablas con prefijo `udv_` para no interferir con otras aplicaciones en la misma base de datos:
+El sistema de lectura en voz alta no solo lee el texto — adapta la emocion de la voz segun el contenido de cada dia.
 
-Only 2 tables are created with `udv_` prefix to avoid conflicts with other apps in the same database:
+### Proceso
 
-Seulement 2 tables sont creees avec le prefixe `udv_` pour eviter les conflits:
+1. **Analisis de contenido** — El script `scripts/analyze_tts_styles.cjs` analiza los 365 textos buscando palabras clave emocionales
+2. **Clasificacion automatica** — Cada dia se clasifica en uno de estos tonos:
+   - **Alegre** (`cheerful`) — textos sobre bendiciones, felicidad, amor, esperanza
+   - **Reflexivo** (`sad`) — textos sobre sufrimiento, perdida, arrepentimiento, consuelo
+   - **Motivacional** (`encouraging`) — textos sobre fe, fortaleza, perseverancia, confianza
+   - **Solemne** (`solemn`) — textos sobre gloria, profecia, juicio, poder divino
+3. **Estilos de voz** — Segun el tono, se asignan estilos a cada voz:
 
-| Tabla / Table | Descripcion / Description |
-|---|---|
-| `udv_settings` | Meta y ultima vista seleccionada / Goal and last selected view |
-| `udv_marked_days` | Dias marcados / Marked days |
+| Tono | Voz femenina (texto) | Voz masculina (comentario) |
+|------|---------------------|---------------------------|
+| Alegre | `cheerful` | `cheerful` o `excited` |
+| Reflexivo | `sad` | `sad` o `chat` |
+| Motivacional | `cheerful` | `chat` |
+| Solemne | neutral | `chat` |
+
+4. **Expansion de abreviaturas** — Antes de enviar al TTS, se expanden las abreviaturas biblicas para que la voz las lea completas (Luc. → Lucas, 1 Cor. → 1 Corintios, etc.)
+
+### Regenerar los estilos
+
+Si modificas los textos diarios, regenera los estilos ejecutando:
+
+```bash
+node scripts/analyze_tts_styles.cjs
+```
+
+Esto actualiza `src/data/ttsStyles.json` automaticamente.
+
+### Usar tu propia API de TTS
+
+El sistema funciona con cualquier API que:
+- Acepte un `POST` con body JSON: `{ "text": "...", "voice": "...", "style": "..." }`
+- Devuelva un archivo de audio (MP3, WAV, etc.)
+- Soporte voces neuronales con estilos emocionales
+
+Los estilos disponibles dependen de tu proveedor de TTS. Los estilos usados aqui son compatibles con voces neuronales de Microsoft Azure en espanol mexicano.
 
 ---
 
 ## API Endpoints
 
-| Metodo | Ruta | Descripcion / Description |
-|---|---|---|
-| `GET` | `/api/settings` | Obtener meta y vista / Get goal and view mode |
-| `PUT` | `/api/settings` | Guardar meta y/o vista / Save goal and/or view mode |
-| `GET` | `/api/marked` | Obtener dias marcados / Get marked days |
-| `POST` | `/api/marked` | Marcar o desmarcar un dia / Mark or unmark a day |
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| `GET` | `/api/settings` | Obtener meta y vista |
+| `PUT` | `/api/settings` | Guardar meta y/o vista |
+| `GET` | `/api/marked` | Obtener dias marcados |
+| `POST` | `/api/marked` | Marcar o desmarcar un dia |
 
 ---
 
-## Tecnologias / Tech stack / Technologies
+## Tecnologias
 
 - **Frontend**: React 19, Tailwind CSS 4, Lucide Icons
 - **Backend**: Express 5, Node.js
-- **Base de datos**: PostgreSQL (via `pg`)
+- **Base de datos**: PostgreSQL
 - **Build**: Vite 7
-- **Audio**: Web Audio API (sin archivos externos / no external files)
+- **TTS**: API de Text-to-Speech con voces neuronales (opcional)
+- **Deploy**: Vercel (serverless functions)
 
 ---
 
-## Ideas para implementar / Ideas to implement / Idees a implementer
+## Contribuir
 
-### ES - Espanol
+Este es un proyecto open source. Puedes:
 
-- **Multiples metas** - Seguir mas de un habito a la vez con colores diferentes
-- **Modo oscuro/claro** - Alternar entre temas
-- **Exportar datos** - Descargar tu progreso como CSV o imagen
-- **Notas diarias** - Agregar una nota corta a cada dia marcado
-- **Graficas de progreso** - Ver tu consistencia en graficas de barras o lineas
-- **Recordatorios** - Notificaciones push para recordarte marcar el dia
-- **Modo compartido** - Compartir tu progreso con amigos o en redes sociales
-- **Categorias de habitos** - Ejercicio, lectura, meditacion, etc con iconos propios
-- **Vista de calor** - Mapa de calor estilo GitHub para visualizar actividad
-- **Autenticacion** - Login para que multiples personas usen la misma instancia
-- **PWA** - Instalar como app nativa en el telefono
-- **Widget** - Mini calendario para incrustar en otras paginas
+1. **Hacer fork** del repositorio
+2. **Crear tu rama** (`git checkout -b mi-feature`)
+3. **Hacer tus cambios** y commit
+4. **Enviar un Pull Request**
 
-### EN - English
+### Lo que necesitas para contribuir
 
-- **Multiple goals** - Track more than one habit with different colors
-- **Dark/Light mode** - Toggle between themes
-- **Export data** - Download your progress as CSV or image
-- **Daily notes** - Add a short note to each marked day
-- **Progress charts** - See your consistency in bar or line charts
-- **Reminders** - Push notifications to remind you to mark the day
-- **Shared mode** - Share your progress with friends or on social media
-- **Habit categories** - Exercise, reading, meditation, etc with custom icons
-- **Heat map view** - GitHub-style heat map to visualize activity
-- **Authentication** - Login so multiple people can use the same instance
-- **PWA** - Install as a native app on your phone
-- **Widget** - Mini calendar to embed in other pages
-
-### FR - Francais
-
-- **Objectifs multiples** - Suivre plus d'une habitude avec des couleurs differentes
-- **Mode sombre/clair** - Basculer entre les themes
-- **Exporter les donnees** - Telecharger votre progres en CSV ou image
-- **Notes quotidiennes** - Ajouter une courte note a chaque jour marque
-- **Graphiques de progres** - Voir votre regularite en graphiques
-- **Rappels** - Notifications push pour vous rappeler de marquer le jour
-- **Mode partage** - Partager votre progres avec des amis ou sur les reseaux sociaux
-- **Categories d'habitudes** - Exercice, lecture, meditation, etc avec des icones
-- **Vue carte de chaleur** - Carte de chaleur style GitHub pour visualiser l'activite
-- **Authentification** - Connexion pour que plusieurs personnes utilisent la meme instance
-- **PWA** - Installer comme application native sur votre telephone
-- **Widget** - Mini calendrier a integrer dans d'autres pages
+- El frontend y toda la logica del calendario, lectura biblica y TTS estan en el codigo
+- Los datos biblicos (365 textos diarios, programa de lectura, libros) estan en `src/data/`
+- Solo necesitas configurar tu propia base de datos PostgreSQL y, opcionalmente, tu propia API de TTS
+- No se comparten credenciales ni API keys — cada quien configura las suyas en su `.env`
 
 ---
 
-## Licencia / License / Licence
+## Licencia
 
-MIT - Usa este proyecto como quieras / Use this project however you want / Utilisez ce projet comme vous le souhaitez.
+MIT — Usa este proyecto como quieras.
 
 ---
 
-Hecho con dedicacion / Made with dedication / Fait avec dedication.
+Hecho con dedicacion para la comunidad.
