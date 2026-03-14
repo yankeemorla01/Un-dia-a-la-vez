@@ -610,8 +610,6 @@ export default function DailyReading() {
                 <ChevronRight size={16} />
               </button>
             </div>
-          </>
-        )}
       </div>
     </div>
   );
