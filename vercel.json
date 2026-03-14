@@ -1,0 +1,9 @@
+{
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/settings", "destination": "/api/settings" },
+    { "source": "/api/marked", "destination": "/api/marked" },
+    { "source": "/api/sync", "destination": "/api/sync" }
+  ]
+}
