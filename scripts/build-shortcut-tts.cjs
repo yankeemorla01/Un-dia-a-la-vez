@@ -11,19 +11,41 @@ function makeUUID() {
   });
 }
 
-// UUIDs for referencing outputs
 const uuidTextInput = makeUUID();
-const uuidVoiceMenu = makeUUID();
-const uuidStyleMenu = makeUUID();
-const uuidTtsUrl = makeUUID();
 const uuidAudio = makeUUID();
+
+// GroupingIdentifiers for menus
+const voiceMenuGroup = makeUUID();
+const styleMenuGroup = makeUUID();
+
+const voices = [
+  { label: 'Dalia (Mujer, Mexico)', id: 'es-MX-DaliaNeural' },
+  { label: 'Jorge (Hombre, Mexico)', id: 'es-MX-JorgeNeural' },
+  { label: 'Jenny (Mujer, English)', id: 'en-US-JennyNeural' },
+  { label: 'Guy (Hombre, English)', id: 'en-US-GuyNeural' },
+  { label: 'Francisca (Mujer, Portugues)', id: 'pt-BR-FranciscaNeural' },
+  { label: 'Denise (Mujer, Frances)', id: 'fr-FR-DeniseNeural' },
+];
+
+const styles = [
+  { label: 'Alegre', id: 'cheerful' },
+  { label: 'Triste', id: 'sad' },
+  { label: 'Enojado', id: 'angry' },
+  { label: 'Emocionado', id: 'excited' },
+  { label: 'Amigable', id: 'friendly' },
+  { label: 'Calmado', id: 'calm' },
+  { label: 'Conversacional', id: 'chat' },
+  { label: 'Susurro', id: 'whispering' },
+  { label: 'Aterrado', id: 'terrified' },
+  { label: 'Normal', id: '' },
+];
 
 const actions = [
   // Comment
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.comment',
     WFWorkflowActionParameters: {
-      WFCommentActionText: 'Lector TTS — Un Día a la Vez\nEscribe cualquier texto y escúchalo con voces de IA. Elige personaje, idioma y emoción.',
+      WFCommentActionText: 'Lector TTS — Un Dia a la Vez\nEscribe cualquier texto y escuchalo con voces de IA.',
     },
   },
 
@@ -31,216 +53,82 @@ const actions = [
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.ask',
     WFWorkflowActionParameters: {
-      WFAskActionPrompt: '¿Qué quieres que lea?',
+      WFAskActionPrompt: 'Que quieres que lea?',
       WFInputType: 'Text',
       UUID: uuidTextInput,
     },
   },
 
-  // 2. Choose voice/character
+  // 2. Voice menu - Open
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
     WFWorkflowActionParameters: {
       WFControlFlowMode: 0,
-      WFMenuPrompt: '¿Con qué voz?',
-      WFMenuItems: [
-        '🇲🇽 Dalia (Mujer, México)',
-        '🇲🇽 Jorge (Hombre, México)',
-        '🇺🇸 Jenny (Mujer, English)',
-        '🇺🇸 Guy (Hombre, English)',
-        '🇧🇷 Francisca (Mujer, Português)',
-        '🇫🇷 Denise (Mujer, Français)',
-      ],
-      UUID: uuidVoiceMenu,
+      WFMenuPrompt: 'Con que voz?',
+      WFMenuItems: voices.map(v => v.label),
+      GroupingIdentifier: voiceMenuGroup,
     },
   },
 
-  // --- Case: Dalia ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇲🇽 Dalia (Mujer, México)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'es-MX-DaliaNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // --- Case: Jorge ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇲🇽 Jorge (Hombre, México)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'es-MX-JorgeNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // --- Case: Jenny ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇺🇸 Jenny (Mujer, English)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'en-US-JennyNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // --- Case: Guy ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇺🇸 Guy (Hombre, English)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'en-US-GuyNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // --- Case: Francisca ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇧🇷 Francisca (Mujer, Português)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'pt-BR-FranciscaNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // --- Case: Denise ---
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 1,
-      WFMenuItemTitle: '🇫🇷 Denise (Mujer, Français)',
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-    WFWorkflowActionParameters: {
-      WFTextActionText: 'fr-FR-DeniseNeural',
-      UUID: makeUUID(),
-    },
-  },
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-    WFWorkflowActionParameters: {
-      WFVariableName: 'selectedVoice',
-    },
-  },
-
-  // End menu
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 2,
-    },
-  },
-
-  // 3. Choose style/emotion
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-    WFWorkflowActionParameters: {
-      WFControlFlowMode: 0,
-      WFMenuPrompt: '¿Con qué emoción?',
-      WFMenuItems: [
-        '😊 Alegre (cheerful)',
-        '😢 Triste (sad)',
-        '😠 Enojado (angry)',
-        '🤩 Emocionado (excited)',
-        '🤗 Amigable (friendly)',
-        '🌙 Calmado (calm)',
-        '💬 Conversacional (chat)',
-        '🤫 Susurro (whispering)',
-        '😱 Aterrado (terrified)',
-        '🎤 Normal (neutral)',
-      ],
-      UUID: uuidStyleMenu,
-    },
-  },
-
-  // --- Style cases ---
-  ...[
-    ['😊 Alegre (cheerful)', 'cheerful'],
-    ['😢 Triste (sad)', 'sad'],
-    ['😠 Enojado (angry)', 'angry'],
-    ['🤩 Emocionado (excited)', 'excited'],
-    ['🤗 Amigable (friendly)', 'friendly'],
-    ['🌙 Calmado (calm)', 'calm'],
-    ['💬 Conversacional (chat)', 'chat'],
-    ['🤫 Susurro (whispering)', 'whispering'],
-    ['😱 Aterrado (terrified)', 'terrified'],
-    ['🎤 Normal (neutral)', ''],
-  ].flatMap(([title, style]) => [
+  // Voice menu - Cases
+  ...voices.flatMap(v => [
     {
       WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
       WFWorkflowActionParameters: {
         WFControlFlowMode: 1,
-        WFMenuItemTitle: title,
+        WFMenuItemTitle: v.label,
+        GroupingIdentifier: voiceMenuGroup,
       },
     },
     {
       WFWorkflowActionIdentifier: 'is.workflow.actions.text',
       WFWorkflowActionParameters: {
-        WFTextActionText: style,
+        WFTextActionText: v.id,
+        UUID: makeUUID(),
+      },
+    },
+    {
+      WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
+      WFWorkflowActionParameters: {
+        WFVariableName: 'selectedVoice',
+      },
+    },
+  ]),
+
+  // Voice menu - End
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionParameters: {
+      WFControlFlowMode: 2,
+      GroupingIdentifier: voiceMenuGroup,
+    },
+  },
+
+  // 3. Style menu - Open
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionParameters: {
+      WFControlFlowMode: 0,
+      WFMenuPrompt: 'Con que emocion?',
+      WFMenuItems: styles.map(s => s.label),
+      GroupingIdentifier: styleMenuGroup,
+    },
+  },
+
+  // Style menu - Cases
+  ...styles.flatMap(s => [
+    {
+      WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+      WFWorkflowActionParameters: {
+        WFControlFlowMode: 1,
+        WFMenuItemTitle: s.label,
+        GroupingIdentifier: styleMenuGroup,
+      },
+    },
+    {
+      WFWorkflowActionIdentifier: 'is.workflow.actions.text',
+      WFWorkflowActionParameters: {
+        WFTextActionText: s.id || ' ',
         UUID: makeUUID(),
       },
     },
@@ -252,11 +140,12 @@ const actions = [
     },
   ]),
 
-  // End style menu
+  // Style menu - End
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
     WFWorkflowActionParameters: {
       WFControlFlowMode: 2,
+      GroupingIdentifier: styleMenuGroup,
     },
   },
 
@@ -265,11 +154,11 @@ const actions = [
     WFWorkflowActionIdentifier: 'is.workflow.actions.url',
     WFWorkflowActionParameters: {
       WFURLActionURL: `${BASE_URL}/api/tts`,
-      UUID: uuidTtsUrl,
+      UUID: makeUUID(),
     },
   },
 
-  // 5. POST to TTS API with JSON body using variables
+  // 5. POST to TTS API
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.downloadurl',
     WFWorkflowActionParameters: {
@@ -331,11 +220,11 @@ const actions = [
     WFWorkflowActionParameters: {},
   },
 
-  // 7. Show completion
+  // 7. Done notification
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.notification',
     WFWorkflowActionParameters: {
-      WFNotificationActionBody: '✅ Lectura completada',
+      WFNotificationActionBody: 'Lectura completada',
       WFNotificationActionSound: false,
     },
   },
@@ -351,4 +240,4 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 const outputPath = path.join(outputDir, 'lector-tts.shortcut');
 fs.writeFileSync(outputPath, shortcut);
 console.log(`Shortcut generado: ${outputPath}`);
-console.log(`Tamaño: ${shortcut.length} bytes`);
+console.log(`Tamano: ${shortcut.length} bytes`);
