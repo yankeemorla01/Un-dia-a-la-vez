@@ -112,7 +112,65 @@ const actions = [
     WFWorkflowActionParameters: {},
   },
 
-  // 11. Get text to show at the end
+  // 11. Get "key" (day_key) from the API response to mark the day
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
+    WFWorkflowActionParameters: {
+      WFDictionaryKey: 'key',
+      WFGetDictionaryValueType: 'Value',
+      WFInput: {
+        Value: { OutputUUID: uuidApiCall, OutputName: 'Contents of URL', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: makeUUID(),
+    },
+  },
+
+  // 12. Build the mark request URL
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.url',
+    WFWorkflowActionParameters: {
+      WFURLActionURL: `${BASE_URL}/api/marked`,
+      UUID: makeUUID(),
+    },
+  },
+
+  // 13. POST to mark today as completed
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.downloadurl',
+    WFWorkflowActionParameters: {
+      WFHTTPMethod: 'POST',
+      WFHTTPBodyType: 'JSON',
+      WFJSONValues: {
+        Value: {
+          WFDictionaryFieldValueItems: [
+            {
+              WFItemType: 0,
+              WFKey: { Value: { attachmentsByRange: {}, string: 'day_key' }, WFSerializationType: 'WFTextTokenString' },
+              WFValue: {
+                Value: {
+                  attachmentsByRange: {
+                    '{0, 1}': { OutputUUID: uuidApiCall, OutputName: 'Contents of URL', Type: 'ActionOutput' },
+                  },
+                  string: '\uFFFC',
+                },
+                WFSerializationType: 'WFTextTokenString',
+              },
+            },
+            {
+              WFItemType: 4,
+              WFKey: { Value: { attachmentsByRange: {}, string: 'marked' }, WFSerializationType: 'WFTextTokenString' },
+              WFValue: { Value: true, WFSerializationType: 'WFNumberSubstitutableState' },
+            },
+          ],
+        },
+        WFSerializationType: 'WFDictionaryFieldValue',
+      },
+      UUID: makeUUID(),
+    },
+  },
+
+  // 14. Get source to show at the end
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
     WFWorkflowActionParameters: {
@@ -125,7 +183,7 @@ const actions = [
     },
   },
 
-  // 12. Show source
+  // 15. Show source
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.showresult',
     WFWorkflowActionParameters: {},
