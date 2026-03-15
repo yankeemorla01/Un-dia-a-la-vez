@@ -106,12 +106,18 @@ Crea un archivo `.env` en la raiz del proyecto:
 # Base de datos PostgreSQL
 MONGODB_URI=postgresql://usuario:contrasena@host:puerto/nombre_db
 
-# Text-to-Speech (opcional, para lectura en voz alta)
+# Text-to-Speech — Server-side (para el API /api/daily-text)
+TTS_API_URL=tu_url_de_api_tts
+TTS_API_KEY=tu_api_key_tts
+
+# Text-to-Speech — Frontend (para el boton de audio en la web)
 VITE_TTS_API_URL=tu_url_de_api_tts
 VITE_TTS_API_KEY=tu_api_key_tts
 ```
 
-> **Nota sobre TTS:** La lectura en voz alta usa una API de Text-to-Speech compatible con voces neuronales de Microsoft Azure (como `es-MX-DaliaNeural` y `es-MX-JorgeNeural`). Puedes usar cualquier API que acepte `{ text, voice, style }` como body y devuelva audio. Si no configuras estas variables, la app funciona perfectamente sin audio.
+> **Nota sobre TTS:** La lectura en voz alta usa una API de Text-to-Speech compatible con voces neuronales de Microsoft Azure (como `es-MX-DaliaNeural` y `es-MX-JorgeNeural`). Necesitas tu propia API que acepte un POST con `{ text, voice, style }` y devuelva audio. Las variables `TTS_*` (sin VITE_) son solo del servidor y nunca se exponen al navegador. Las variables `VITE_TTS_*` son para el frontend. Si no configuras estas variables, la app funciona sin audio.
+>
+> Puedes usar servicios como [Azure Speech](https://azure.microsoft.com/en-us/products/ai-services/text-to-speech), [Google Cloud TTS](https://cloud.google.com/text-to-speech), o cualquier API compatible.
 
 ### 4. Iniciar la aplicacion
 
@@ -213,6 +219,52 @@ Los estilos disponibles dependen de tu proveedor de TTS. Los estilos usados aqui
 
 ---
 
+## Shortcut de iPhone
+
+La app incluye un Shortcut de iOS descargable que lee el texto del dia con voces de IA directamente desde tu iPhone.
+
+### Como instalarlo
+
+1. Abre Safari en tu iPhone y ve a `https://tu-app.vercel.app/api/shortcut`
+2. El archivo se descarga y se abre en la app Shortcuts
+3. Toca **"Agregar Shortcut"**
+
+### Que hace el Shortcut
+
+1. Descarga el texto del dia desde la API
+2. Muestra una notificacion con la fecha
+3. Reproduce el texto biblico (voz femenina)
+4. Reproduce el comentario (voz masculina)
+5. Marca el dia como completado en tu calendario
+6. Muestra la fuente
+
+### Lectura automatica cada manana
+
+1. Abre la app **Shortcuts** → pestaña **Automatizacion**
+2. Toca **+ Nueva Automatizacion** → **Hora del dia**
+3. Elige tu hora (ej. 7:00 AM), repetir **Diariamente**
+4. Selecciona el shortcut **"Texto del Dia"**
+5. Activa **"Ejecutar inmediatamente"**
+
+### Generar tu propio Shortcut
+
+Si haces fork del proyecto, necesitas generar y firmar tu propio shortcut:
+
+```bash
+# 1. Edita la URL base en scripts/build-shortcut.cjs
+# 2. Genera el archivo .shortcut
+node scripts/build-shortcut.cjs
+
+# 3. Firma el shortcut (requiere macOS)
+shortcuts sign --mode anyone \
+  --input public/texto-del-dia.shortcut \
+  --output public/texto-del-dia-signed.shortcut
+```
+
+El comando `shortcuts sign` viene preinstalado en macOS. El modo `anyone` permite que cualquiera instale el shortcut.
+
+---
+
 ## API Endpoints
 
 | Metodo | Ruta | Descripcion |
@@ -221,6 +273,11 @@ Los estilos disponibles dependen de tu proveedor de TTS. Los estilos usados aqui
 | `PUT` | `/api/settings` | Guardar meta y/o vista |
 | `GET` | `/api/marked` | Obtener dias marcados |
 | `POST` | `/api/marked` | Marcar o desmarcar un dia |
+| `GET` | `/api/daily-text` | Texto del dia en JSON |
+| `GET` | `/api/daily-text?format=audio&part=text` | Audio TTS del texto |
+| `GET` | `/api/daily-text?format=audio&part=commentary` | Audio TTS del comentario |
+| `GET` | `/api/shortcut` | Descarga el Shortcut de iOS |
+| `GET` | `/api/texto-diario` | Pagina web standalone del texto del dia |
 
 ---
 

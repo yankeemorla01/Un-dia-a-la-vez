@@ -69,8 +69,8 @@ export default async function handler(req, res) {
 
     // ?format=audio — return TTS audio
     if (req.query.format === 'audio') {
-      const ttsUrl = process.env.VITE_TTS_API_URL;
-      const ttsKey = process.env.VITE_TTS_API_KEY;
+      const ttsUrl = process.env.TTS_API_URL;
+      const ttsKey = process.env.TTS_API_KEY;
 
       if (!ttsUrl || !ttsKey) {
         return res.status(500).json({ error: 'TTS not configured' });
