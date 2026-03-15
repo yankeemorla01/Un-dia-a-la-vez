@@ -4,6 +4,9 @@
   "rewrites": [
     { "source": "/api/settings", "destination": "/api/settings" },
     { "source": "/api/marked", "destination": "/api/marked" },
-    { "source": "/api/sync", "destination": "/api/sync" }
+    { "source": "/api/sync", "destination": "/api/sync" },
+    { "source": "/api/daily-text", "destination": "/api/daily-text" },
+    { "source": "/api/texto-diario", "destination": "/api/texto-diario" },
+    { "source": "/api/shortcut", "destination": "/api/shortcut" }
   ]
 }
