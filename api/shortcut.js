@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).send('Method not allowed');
 
   try {
-    const shortcutData = readFileSync(join(__dirname, '..', 'public', 'texto-del-dia.shortcut'));
+    const shortcutData = readFileSync(join(__dirname, '..', 'public', 'texto-del-dia-signed.shortcut'));
 
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', 'attachment; filename="Texto del Dia.shortcut"');
