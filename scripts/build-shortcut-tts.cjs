@@ -12,33 +12,29 @@ function makeUUID() {
 }
 
 const uuidTextInput = makeUUID();
+const uuidVoiceDict = makeUUID();
+const uuidVoiceKeys = makeUUID();
+const uuidVoiceChoice = makeUUID();
+const uuidVoiceId = makeUUID();
+const uuidStyleDict = makeUUID();
+const uuidStyleKeys = makeUUID();
+const uuidStyleChoice = makeUUID();
+const uuidStyleId = makeUUID();
 const uuidAudio = makeUUID();
 
-// GroupingIdentifiers for menus
-const voiceMenuGroup = makeUUID();
-const styleMenuGroup = makeUUID();
-
-const voices = [
-  { label: 'Dalia (Mujer, Mexico)', id: 'es-MX-DaliaNeural' },
-  { label: 'Jorge (Hombre, Mexico)', id: 'es-MX-JorgeNeural' },
-  { label: 'Jenny (Mujer, English)', id: 'en-US-JennyNeural' },
-  { label: 'Guy (Hombre, English)', id: 'en-US-GuyNeural' },
-  { label: 'Francisca (Mujer, Portugues)', id: 'pt-BR-FranciscaNeural' },
-  { label: 'Denise (Mujer, Frances)', id: 'fr-FR-DeniseNeural' },
-];
-
-const styles = [
-  { label: 'Alegre', id: 'cheerful' },
-  { label: 'Triste', id: 'sad' },
-  { label: 'Enojado', id: 'angry' },
-  { label: 'Emocionado', id: 'excited' },
-  { label: 'Amigable', id: 'friendly' },
-  { label: 'Calmado', id: 'calm' },
-  { label: 'Conversacional', id: 'chat' },
-  { label: 'Susurro', id: 'whispering' },
-  { label: 'Aterrado', id: 'terrified' },
-  { label: 'Normal', id: '' },
-];
+function makeDictItems(entries) {
+  return entries.map(([key, val]) => ({
+    WFItemType: 0,
+    WFKey: {
+      Value: { attachmentsByRange: {}, string: key },
+      WFSerializationType: 'WFTextTokenString',
+    },
+    WFValue: {
+      Value: { attachmentsByRange: {}, string: val },
+      WFSerializationType: 'WFTextTokenString',
+    },
+  }));
+}
 
 const actions = [
   // Comment
@@ -59,97 +55,155 @@ const actions = [
     },
   },
 
-  // 2. Voice menu - Open
+  // ========== VOICE SELECTION ==========
+
+  // 2. Dictionary: voice labels -> voice IDs
   {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionIdentifier: 'is.workflow.actions.dictionary',
     WFWorkflowActionParameters: {
-      WFControlFlowMode: 0,
-      WFMenuPrompt: 'Con que voz?',
-      WFMenuItems: voices.map(v => v.label),
-      GroupingIdentifier: voiceMenuGroup,
+      WFItems: {
+        Value: {
+          WFDictionaryFieldValueItems: makeDictItems([
+            ['Dalia (Mujer, Mexico)', 'es-MX-DaliaNeural'],
+            ['Jorge (Hombre, Mexico)', 'es-MX-JorgeNeural'],
+            ['Jenny (Mujer, English)', 'en-US-JennyNeural'],
+            ['Guy (Hombre, English)', 'en-US-GuyNeural'],
+            ['Francisca (Mujer, Portugues)', 'pt-BR-FranciscaNeural'],
+            ['Denise (Mujer, Frances)', 'fr-FR-DeniseNeural'],
+          ]),
+        },
+        WFSerializationType: 'WFDictionaryFieldValue',
+      },
+      UUID: uuidVoiceDict,
     },
   },
 
-  // Voice menu - Cases
-  ...voices.flatMap(v => [
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-      WFWorkflowActionParameters: {
-        WFControlFlowMode: 1,
-        WFMenuItemTitle: v.label,
-        GroupingIdentifier: voiceMenuGroup,
-      },
-    },
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-      WFWorkflowActionParameters: {
-        WFTextActionText: v.id,
-        UUID: makeUUID(),
-      },
-    },
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-      WFWorkflowActionParameters: {
-        WFVariableName: 'selectedVoice',
-      },
-    },
-  ]),
-
-  // Voice menu - End
+  // 3. Get All Keys from voice dictionary
   {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
     WFWorkflowActionParameters: {
-      WFControlFlowMode: 2,
-      GroupingIdentifier: voiceMenuGroup,
+      WFGetDictionaryValueType: 'All Keys',
+      WFInput: {
+        Value: { OutputUUID: uuidVoiceDict, OutputName: 'Dictionary', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidVoiceKeys,
     },
   },
 
-  // 3. Style menu - Open
+  // 4. Choose from List (voice)
   {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefromlist',
     WFWorkflowActionParameters: {
-      WFControlFlowMode: 0,
-      WFMenuPrompt: 'Con que emocion?',
-      WFMenuItems: styles.map(s => s.label),
-      GroupingIdentifier: styleMenuGroup,
+      WFChooseFromListActionPrompt: 'Con que voz?',
+      WFInput: {
+        Value: { OutputUUID: uuidVoiceKeys, OutputName: 'Dictionary Value', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidVoiceChoice,
     },
   },
 
-  // Style menu - Cases
-  ...styles.flatMap(s => [
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
-      WFWorkflowActionParameters: {
-        WFControlFlowMode: 1,
-        WFMenuItemTitle: s.label,
-        GroupingIdentifier: styleMenuGroup,
-      },
-    },
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.text',
-      WFWorkflowActionParameters: {
-        WFTextActionText: s.id || ' ',
-        UUID: makeUUID(),
-      },
-    },
-    {
-      WFWorkflowActionIdentifier: 'is.workflow.actions.setvariable',
-      WFWorkflowActionParameters: {
-        WFVariableName: 'selectedStyle',
-      },
-    },
-  ]),
-
-  // Style menu - End
+  // 5. Get value for chosen voice key
   {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefrommenu',
+    WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
     WFWorkflowActionParameters: {
-      WFControlFlowMode: 2,
-      GroupingIdentifier: styleMenuGroup,
+      WFGetDictionaryValueType: 'Value',
+      WFDictionaryKey: {
+        Value: {
+          attachmentsByRange: {
+            '{0, 1}': { OutputUUID: uuidVoiceChoice, OutputName: 'Chosen Item', Type: 'ActionOutput' },
+          },
+          string: '\uFFFC',
+        },
+        WFSerializationType: 'WFTextTokenString',
+      },
+      WFInput: {
+        Value: { OutputUUID: uuidVoiceDict, OutputName: 'Dictionary', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidVoiceId,
     },
   },
 
-  // 4. Build API URL
+  // ========== STYLE SELECTION ==========
+
+  // 6. Dictionary: style labels -> style IDs
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.dictionary',
+    WFWorkflowActionParameters: {
+      WFItems: {
+        Value: {
+          WFDictionaryFieldValueItems: makeDictItems([
+            ['Alegre', 'cheerful'],
+            ['Triste', 'sad'],
+            ['Enojado', 'angry'],
+            ['Emocionado', 'excited'],
+            ['Amigable', 'friendly'],
+            ['Calmado', 'calm'],
+            ['Conversacional', 'chat'],
+            ['Susurro', 'whispering'],
+            ['Aterrado', 'terrified'],
+            ['Normal', 'neutral'],
+          ]),
+        },
+        WFSerializationType: 'WFDictionaryFieldValue',
+      },
+      UUID: uuidStyleDict,
+    },
+  },
+
+  // 7. Get All Keys from style dictionary
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
+    WFWorkflowActionParameters: {
+      WFGetDictionaryValueType: 'All Keys',
+      WFInput: {
+        Value: { OutputUUID: uuidStyleDict, OutputName: 'Dictionary', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidStyleKeys,
+    },
+  },
+
+  // 8. Choose from List (style)
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.choosefromlist',
+    WFWorkflowActionParameters: {
+      WFChooseFromListActionPrompt: 'Con que emocion?',
+      WFInput: {
+        Value: { OutputUUID: uuidStyleKeys, OutputName: 'Dictionary Value', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidStyleChoice,
+    },
+  },
+
+  // 9. Get value for chosen style key
+  {
+    WFWorkflowActionIdentifier: 'is.workflow.actions.getvalueforkey',
+    WFWorkflowActionParameters: {
+      WFGetDictionaryValueType: 'Value',
+      WFDictionaryKey: {
+        Value: {
+          attachmentsByRange: {
+            '{0, 1}': { OutputUUID: uuidStyleChoice, OutputName: 'Chosen Item', Type: 'ActionOutput' },
+          },
+          string: '\uFFFC',
+        },
+        WFSerializationType: 'WFTextTokenString',
+      },
+      WFInput: {
+        Value: { OutputUUID: uuidStyleDict, OutputName: 'Dictionary', Type: 'ActionOutput' },
+        WFSerializationType: 'WFTextTokenAttachment',
+      },
+      UUID: uuidStyleId,
+    },
+  },
+
+  // ========== CALL TTS API ==========
+
+  // 10. URL
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.url',
     WFWorkflowActionParameters: {
@@ -158,7 +212,7 @@ const actions = [
     },
   },
 
-  // 5. POST to TTS API
+  // 11. POST to TTS
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.downloadurl',
     WFWorkflowActionParameters: {
@@ -186,7 +240,7 @@ const actions = [
               WFValue: {
                 Value: {
                   attachmentsByRange: {
-                    '{0, 1}': { Type: 'Variable', VariableName: 'selectedVoice' },
+                    '{0, 1}': { OutputUUID: uuidVoiceId, OutputName: 'Dictionary Value', Type: 'ActionOutput' },
                   },
                   string: '\uFFFC',
                 },
@@ -199,7 +253,7 @@ const actions = [
               WFValue: {
                 Value: {
                   attachmentsByRange: {
-                    '{0, 1}': { Type: 'Variable', VariableName: 'selectedStyle' },
+                    '{0, 1}': { OutputUUID: uuidStyleId, OutputName: 'Dictionary Value', Type: 'ActionOutput' },
                   },
                   string: '\uFFFC',
                 },
@@ -214,19 +268,10 @@ const actions = [
     },
   },
 
-  // 6. Play the audio
+  // 12. Play audio
   {
     WFWorkflowActionIdentifier: 'is.workflow.actions.playsound',
     WFWorkflowActionParameters: {},
-  },
-
-  // 7. Done notification
-  {
-    WFWorkflowActionIdentifier: 'is.workflow.actions.notification',
-    WFWorkflowActionParameters: {
-      WFNotificationActionBody: 'Lectura completada',
-      WFNotificationActionSound: false,
-    },
   },
 ];
 
