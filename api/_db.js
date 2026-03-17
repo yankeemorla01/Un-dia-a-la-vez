@@ -91,10 +91,17 @@ export async function initDB() {
       name VARCHAR(200) NOT NULL,
       created_by VARCHAR(255) NOT NULL,
       invite_code VARCHAR(8) UNIQUE NOT NULL,
+      goal_id UUID,
       start_date VARCHAR(20) NOT NULL,
       end_date VARCHAR(20),
       created_at TIMESTAMP DEFAULT NOW()
     );
+
+    -- Add goal_id to competitions if not exists
+    DO $$ BEGIN
+      ALTER TABLE udv_competitions ADD COLUMN goal_id UUID;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS udv_competition_members (
       competition_id UUID NOT NULL,

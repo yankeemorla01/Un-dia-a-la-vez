@@ -98,6 +98,7 @@ function App() {
               onSelectCompetition={setSelectedCompetition}
               userName={userName}
               photoUrl={photoUrl}
+              goals={goals}
             />
           )}
         </div>

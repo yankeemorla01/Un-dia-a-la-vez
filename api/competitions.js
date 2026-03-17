@@ -23,11 +23,13 @@ export default async function handler(req, res) {
     // GET - List competitions the user is part of
     if (req.method === 'GET') {
       const { rows } = await pool.query(
-        `SELECT c.id, c.name, c.invite_code, c.start_date, c.end_date, c.created_by, c.created_at,
+        `SELECT c.id, c.name, c.invite_code, c.goal_id, c.start_date, c.end_date, c.created_by, c.created_at,
                 cm.display_name as my_display_name,
+                g.name as goal_name, g.emoji as goal_emoji,
                 (SELECT COUNT(*) FROM udv_competition_members WHERE competition_id = c.id) as member_count
          FROM udv_competitions c
          JOIN udv_competition_members cm ON cm.competition_id = c.id AND cm.user_id = $1
+         LEFT JOIN udv_user_goals g ON g.id = c.goal_id
          ORDER BY c.created_at DESC`,
         [userId]
       );
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
 
     // POST - Create a new competition
     if (req.method === 'POST') {
-      const { name, display_name, start_date, end_date, photo_url } = req.body;
+      const { name, display_name, start_date, end_date, photo_url, goal_id } = req.body;
       if (!name || !name.trim()) {
         return res.status(400).json({ error: 'Name is required' });
       }
@@ -48,9 +50,9 @@ export default async function handler(req, res) {
       const startDate = start_date || new Date().toISOString().split('T')[0];
 
       const { rows } = await pool.query(
-        `INSERT INTO udv_competitions (name, created_by, invite_code, start_date, end_date)
-         VALUES ($1, $2, $3, $4, $5) RETURNING id, name, invite_code, start_date, end_date, created_at`,
-        [name.trim(), userId, inviteCode, startDate, end_date || null]
+        `INSERT INTO udv_competitions (name, created_by, invite_code, goal_id, start_date, end_date)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, invite_code, goal_id, start_date, end_date, created_at`,
+        [name.trim(), userId, inviteCode, goal_id || null, startDate, end_date || null]
       );
 
       // Creator joins automatically

@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, LogIn, Trophy, Users, Copy, Check } from 'lucide-react';
+import { Plus, LogIn, Trophy, Users, Copy, Check, Trash2 } from 'lucide-react';
 
 const API = '/api';
 
-export default function CompetitionList({ authFetch, onSelectCompetition, userName, photoUrl }) {
+export default function CompetitionList({ authFetch, onSelectCompetition, userName, photoUrl, goals }) {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Create form
   const [createName, setCreateName] = useState('');
   const [createDisplayName, setCreateDisplayName] = useState(userName || '');
+  const [createGoalId, setCreateGoalId] = useState('none');
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
@@ -40,13 +42,15 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
         name: createName.trim(),
         display_name: createDisplayName.trim(),
         photo_url: photoUrl || null,
+        goal_id: createGoalId === 'none' ? null : createGoalId,
       }),
     })
       .then(r => r.json())
       .then(() => {
         setShowCreate(false);
         setCreateName('');
-        setCreateDisplayName('');
+        setCreateDisplayName(userName || '');
+        setCreateGoalId('none');
         loadCompetitions();
       });
   };
@@ -70,9 +74,22 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
         } else {
           setShowJoin(false);
           setJoinCode('');
-          setJoinDisplayName('');
+          setJoinDisplayName(userName || '');
           loadCompetitions();
         }
+      });
+  };
+
+  const handleDelete = (id) => {
+    authFetch(`${API}/competitions`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+      .then(r => r.json())
+      .then(() => {
+        setConfirmDelete(null);
+        loadCompetitions();
       });
   };
 
@@ -134,6 +151,39 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
             className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
             style={{ caretColor: '#d4af37' }}
           />
+
+          {/* Goal selector */}
+          <label className="text-[10px] uppercase tracking-[0.15em] text-[#6a5a40] font-sans mb-1.5 block">
+            Meta a competir
+          </label>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              onClick={() => setCreateGoalId('none')}
+              className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
+              style={{
+                background: createGoalId === 'none' ? '#d4af37' : '#1a1812',
+                color: createGoalId === 'none' ? '#131109' : '#6a5a40',
+                border: `1px solid ${createGoalId === 'none' ? '#d4af37' : '#252318'}`,
+              }}
+            >
+              📖 Principal
+            </button>
+            {goals.map(g => (
+              <button
+                key={g.id}
+                onClick={() => setCreateGoalId(g.id)}
+                className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
+                style={{
+                  background: createGoalId === g.id ? '#d4af37' : '#1a1812',
+                  color: createGoalId === g.id ? '#131109' : '#6a5a40',
+                  border: `1px solid ${createGoalId === g.id ? '#d4af37' : '#252318'}`,
+                }}
+              >
+                {g.emoji} {g.name}
+              </button>
+            ))}
+          </div>
+
           <div className="flex gap-2">
             <button onClick={() => setShowCreate(false)} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
               Cancelar
@@ -159,7 +209,7 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
           <h3 className="text-sm text-[#d4af37] mb-3 font-semibold">Unirse a Competencia</h3>
           <input
             type="text"
-            placeholder="Código de invitación"
+            placeholder="Codigo de invitacion"
             value={joinCode}
             onChange={e => setJoinCode(e.target.value.toUpperCase())}
             maxLength={6}
@@ -200,27 +250,45 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
       {competitions.length === 0 ? (
         <div className="text-center py-12">
           <Trophy size={48} className="mx-auto mb-4" style={{ color: '#3a3420' }} />
-          <p className="text-sm text-[#6a5a40] font-sans">No tienes competencias aún</p>
-          <p className="text-xs text-[#5a5040] font-sans mt-1">Crea una o únete con un código</p>
+          <p className="text-sm text-[#6a5a40] font-sans">No tienes competencias aun</p>
+          <p className="text-xs text-[#5a5040] font-sans mt-1">Crea una o unete con un codigo</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {competitions.map((comp, idx) => (
             <div
               key={comp.id}
-              onClick={() => onSelectCompetition(comp.id)}
-              className="p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] relative"
               style={{
                 background: '#131109',
                 border: '1px solid #3a3420',
                 animation: `fadeSlide 0.3s ease ${idx * 0.05}s both`,
               }}
+              onClick={() => onSelectCompetition(comp.id)}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-sm text-[#d4af37] font-semibold">{comp.name}</h3>
-                <div className="flex items-center gap-1 text-[#6a5a40]">
-                  <Users size={12} />
-                  <span className="text-[10px] font-sans">{comp.member_count}</span>
+                <div>
+                  <h3 className="text-sm text-[#d4af37] font-semibold">{comp.name}</h3>
+                  {(comp.goal_name || comp.goal_emoji) && (
+                    <span className="text-[10px] text-[#8a7a50] font-sans">
+                      {comp.goal_emoji} {comp.goal_name}
+                    </span>
+                  )}
+                  {!comp.goal_id && (
+                    <span className="text-[10px] text-[#5a5040] font-sans">📖 Principal</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-[#6a5a40]">
+                    <Users size={12} />
+                    <span className="text-[10px] font-sans">{comp.member_count}</span>
+                  </div>
+                  <button
+                    onClick={e => { e.stopPropagation(); setConfirmDelete(comp.id); }}
+                    className="text-[#5a5040] hover:text-[#ff6b6b] transition-colors p-1"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -238,6 +306,39 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-5 text-center"
+            style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.2s ease both' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <Trash2 size={32} className="mx-auto mb-3" style={{ color: '#ff6b6b' }} />
+            <p className="text-sm text-[#e0d8c8] font-sans mb-4">Eliminar esta competencia?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-white"
+                style={{ background: '#dc2626' }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

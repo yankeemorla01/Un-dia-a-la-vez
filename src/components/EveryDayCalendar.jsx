@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut } from "lucide-react";
 import { useMsal } from '@azure/msal-react';
 import { useAuthFetch } from '../useAuthFetch';
 import { useUserPhoto } from '../useUserPhoto';
@@ -341,6 +341,35 @@ export default function EveryDayCalendar({ goalId = null }) {
         style={{ background: "radial-gradient(ellipse at top, rgba(212,175,55,0.05) 0%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
 
       <div className="w-full max-w-6xl px-4 py-8 z-10 flex flex-col items-center animate-[fadeSlide_0.6s_ease_both]">
+
+        {/* Barra superior con usuario y logout */}
+        <div className="w-full max-w-2xl flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            {photoUrl ? (
+              <img src={photoUrl} alt="" className="w-6 h-6 rounded-full border border-[#3a3420] object-cover" />
+            ) : (
+              <div className="w-6 h-6 rounded-full border border-[#3a3420] bg-[#1a1812] flex items-center justify-center">
+                <span className="text-[10px] text-[#6a5a40] font-sans font-bold">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <span className="text-[10px] text-[#6a5a40] font-sans truncate max-w-[180px]">
+              {userName}
+            </span>
+          </div>
+          <button
+            onClick={async () => {
+              const account = accounts[0];
+              await instance.logoutPopup({ account });
+              window.location.href = window.location.origin;
+            }}
+            className="flex items-center gap-1.5 text-[10px] text-[#6a5a40] hover:text-[#d4af37] font-sans transition-colors"
+          >
+            <LogOut size={12} />
+            Cerrar sesion
+          </button>
+        </div>
 
         {/* Cabecera y Meta */}
         <div className="text-center w-full max-w-2xl mb-8">

@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
     // Get competition details
     const { rows: compRows } = await pool.query(
-      'SELECT id, name, invite_code, start_date, end_date, created_by FROM udv_competitions WHERE id = $1',
+      'SELECT id, name, invite_code, goal_id, start_date, end_date, created_by FROM udv_competitions WHERE id = $1',
       [competitionId]
     );
     if (compRows.length === 0) {
@@ -40,6 +40,13 @@ export default async function handler(req, res) {
     const competition = compRows[0];
 
     // Get all members with their marked days count within the competition date range
+    // If competition has a goal_id, only count days for that goal
+    const goalFilter = competition.goal_id
+      ? 'AND md.goal_id = $4'
+      : 'AND md.goal_id IS NULL';
+    const queryParams = [competitionId, competition.start_date, competition.end_date || null];
+    if (competition.goal_id) queryParams.push(competition.goal_id);
+
     const { rows: members } = await pool.query(
       `SELECT cm.user_id, cm.display_name, cm.photo_url, cm.joined_at,
               COUNT(md.day_key) as days_completed
@@ -49,10 +56,11 @@ export default async function handler(req, res) {
          AND md.marked = true
          AND md.day_key >= $2
          AND ($3::varchar IS NULL OR md.day_key <= $3)
+         ${goalFilter}
        WHERE cm.competition_id = $1
        GROUP BY cm.user_id, cm.display_name, cm.photo_url, cm.joined_at
        ORDER BY days_completed DESC, cm.joined_at ASC`,
-      [competitionId, competition.start_date, competition.end_date || null]
+      queryParams
     );
 
     // Calculate total possible days
