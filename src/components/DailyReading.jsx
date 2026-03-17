@@ -459,7 +459,7 @@ export default function DailyReading() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl border shadow-lg transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-20 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-2xl border shadow-lg transition-all hover:scale-105 active:scale-95"
         style={{
           background: "linear-gradient(135deg, #1a1812, #252218)",
           borderColor: "#d4af37",
