@@ -1,18 +1,8 @@
-import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const client = jwksClient({
-  jwksUri: 'https://login.microsoftonline.com/common/discovery/v2.0/keys',
-  cache: true,
-  cacheMaxAge: 86400000,
-});
-
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, (err, key) => {
-    if (err) return callback(err);
-    callback(null, key.getPublicKey());
-  });
-}
+const JWKS = createRemoteJWKSet(
+  new URL('https://login.microsoftonline.com/common/discovery/v2.0/keys')
+);
 
 export async function getUserId(req) {
   const authHeader = req.headers.authorization;
@@ -22,17 +12,21 @@ export async function getUserId(req) {
 
   const token = authHeader.split(' ')[1];
 
-  return new Promise((resolve) => {
-    jwt.verify(token, getKey, {
+  try {
+    const { payload } = await jwtVerify(token, JWKS, {
       algorithms: ['RS256'],
-      issuer: /https:\/\/login\.microsoftonline\.com\/.+\/v2\.0/,
-    }, (err, decoded) => {
-      if (err) {
-        console.error('Token verification failed:', err.message);
-        return resolve(null);
-      }
-      // Use oid (object ID) as unique user identifier
-      resolve(decoded.oid || decoded.sub || null);
     });
-  });
+
+    // Verify issuer matches Microsoft pattern
+    if (!payload.iss || !payload.iss.match(/^https:\/\/login\.microsoftonline\.com\/.+\/v2\.0$/)) {
+      console.error('Token issuer mismatch:', payload.iss);
+      return null;
+    }
+
+    // Use oid (object ID) as unique user identifier
+    return payload.oid || payload.sub || null;
+  } catch (err) {
+    console.error('Token verification failed:', err.message);
+    return null;
+  }
 }
