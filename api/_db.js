@@ -60,44 +60,6 @@ export async function initDB() {
   `);
 }
 
-export async function migrateLegacyData(userId) {
-  const p = getPool();
-
-  // Check if user already has data (already migrated)
-  const { rows: existing } = await p.query(
-    'SELECT user_id FROM udv_user_sync WHERE user_id = $1', [userId]
-  );
-  if (existing.length > 0) return false; // Already migrated
-
-  // Copy legacy settings
-  const { rows: settings } = await p.query('SELECT goal, view_mode FROM udv_settings WHERE id = 1');
-  if (settings.length > 0) {
-    await p.query(
-      'INSERT INTO udv_user_settings (user_id, goal, view_mode) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO NOTHING',
-      [userId, settings[0].goal, settings[0].view_mode]
-    );
-  }
-
-  // Copy legacy marked days
-  const { rows: days } = await p.query('SELECT day_key, marked, created_at FROM udv_marked_days');
-  for (const day of days) {
-    await p.query(
-      'INSERT INTO udv_user_marked_days (user_id, day_key, marked, created_at) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, day_key) DO NOTHING',
-      [userId, day.day_key, day.marked, day.created_at]
-    );
-  }
-
-  // Copy legacy sync version
-  const { rows: sync } = await p.query('SELECT version FROM udv_sync WHERE id = 1');
-  const version = sync[0]?.version || 0;
-  await p.query(
-    'INSERT INTO udv_user_sync (user_id, version) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING',
-    [userId, version]
-  );
-
-  return true; // Migration done
-}
-
 export async function bumpVersion(userId) {
   const p = getPool();
   if (userId) {
