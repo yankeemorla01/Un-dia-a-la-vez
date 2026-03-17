@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, Edit2, Trash2 } from 'lucide-react';
+import { LogOut, Edit2, Trash2, Plus } from 'lucide-react';
 import GoalEditor from './GoalEditor';
 
 const API = '/api';
@@ -10,14 +10,12 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
 
   const handleSaveGoal = async (goalData) => {
     if (goalData.id) {
-      // Update
       await authFetch(`${API}/goals`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(goalData),
       });
     } else {
-      // Create
       await authFetch(`${API}/goals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -56,17 +54,9 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
 
       {/* Goals management */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[10px] tracking-[0.2em] uppercase text-[#6a5a40] font-sans">
-            Tus Metas
-          </h3>
-          <button
-            onClick={() => { setEditingGoal(null); setShowEditor(true); }}
-            className="text-[10px] text-[#d4af37] font-sans font-bold uppercase tracking-wider"
-          >
-            + Nueva
-          </button>
-        </div>
+        <h3 className="text-[10px] tracking-[0.2em] uppercase text-[#6a5a40] font-sans mb-4">
+          Tus Metas
+        </h3>
 
         {/* Default goal */}
         <div
@@ -110,6 +100,20 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
             </div>
           </div>
         ))}
+
+        {/* Add goal button - below the list */}
+        <button
+          onClick={() => { setEditingGoal(null); setShowEditor(true); }}
+          className="w-full mt-3 py-3 rounded-xl text-sm font-sans font-bold tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+          style={{
+            background: 'transparent',
+            border: '1.5px dashed #3a3420',
+            color: '#6a5a40',
+          }}
+        >
+          <Plus size={16} />
+          Nueva Meta
+        </button>
       </div>
 
       {/* Logout */}
@@ -119,7 +123,7 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
         style={{ background: '#1a1812', border: '1px solid #3a3420', color: '#6a5a40' }}
       >
         <LogOut size={16} />
-        Cerrar Sesión
+        Cerrar Sesion
       </button>
 
       {showEditor && (

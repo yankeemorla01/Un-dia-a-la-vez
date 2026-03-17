@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const { invite_code, display_name } = req.body;
+    const { invite_code, display_name, photo_url } = req.body;
     if (!invite_code || !invite_code.trim()) {
       return res.status(400).json({ error: 'Invite code is required' });
     }
@@ -45,8 +45,8 @@ export default async function handler(req, res) {
     }
 
     await pool.query(
-      'INSERT INTO udv_competition_members (competition_id, user_id, display_name) VALUES ($1, $2, $3)',
-      [competition.id, userId, display_name.trim()]
+      'INSERT INTO udv_competition_members (competition_id, user_id, display_name, photo_url) VALUES ($1, $2, $3, $4)',
+      [competition.id, userId, display_name.trim(), photo_url || null]
     );
 
     return res.json({ ok: true, competition_id: competition.id, competition_name: competition.name });

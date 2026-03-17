@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     // POST - Create a new competition
     if (req.method === 'POST') {
-      const { name, display_name, start_date, end_date } = req.body;
+      const { name, display_name, start_date, end_date, photo_url } = req.body;
       if (!name || !name.trim()) {
         return res.status(400).json({ error: 'Name is required' });
       }
@@ -55,8 +55,8 @@ export default async function handler(req, res) {
 
       // Creator joins automatically
       await pool.query(
-        'INSERT INTO udv_competition_members (competition_id, user_id, display_name) VALUES ($1, $2, $3)',
-        [rows[0].id, userId, display_name.trim()]
+        'INSERT INTO udv_competition_members (competition_id, user_id, display_name, photo_url) VALUES ($1, $2, $3, $4)',
+        [rows[0].id, userId, display_name.trim(), photo_url || null]
       );
 
       return res.json({ ...rows[0], member_count: 1 });

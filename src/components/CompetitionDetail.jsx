@@ -99,6 +99,15 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
             >
               <div className="flex items-center gap-3 mb-2 relative z-10">
                 <span className="text-lg w-8 text-center">{positionEmoji}</span>
+                {member.photo_url ? (
+                  <img src={member.photo_url} alt="" className="w-8 h-8 rounded-full border border-[#3a3420] object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full border border-[#3a3420] bg-[#1a1812] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[11px] text-[#6a5a40] font-sans font-bold">
+                      {member.display_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <span className={`text-sm font-sans ${member.is_me ? 'text-[#d4af37] font-bold' : 'text-[#e0d8c8]'}`}>
                     {member.display_name}

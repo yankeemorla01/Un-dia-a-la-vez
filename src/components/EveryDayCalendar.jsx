@@ -322,7 +322,7 @@ export default function EveryDayCalendar({ goalId = null }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center relative overflow-x-hidden pb-16"
+    <div className="flex flex-col items-center relative overflow-x-hidden"
       style={{ background: "#0d0c0a", color: "#e0d8c8", fontFamily: "'Georgia', 'Times New Roman', serif" }}>
 
       <style>{`

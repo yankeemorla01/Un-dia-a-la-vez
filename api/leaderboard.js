@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
     // Get all members with their marked days count within the competition date range
     const { rows: members } = await pool.query(
-      `SELECT cm.user_id, cm.display_name, cm.joined_at,
+      `SELECT cm.user_id, cm.display_name, cm.photo_url, cm.joined_at,
               COUNT(md.day_key) as days_completed
        FROM udv_competition_members cm
        LEFT JOIN udv_user_marked_days md
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
          AND md.day_key >= $2
          AND ($3::varchar IS NULL OR md.day_key <= $3)
        WHERE cm.competition_id = $1
-       GROUP BY cm.user_id, cm.display_name, cm.joined_at
+       GROUP BY cm.user_id, cm.display_name, cm.photo_url, cm.joined_at
        ORDER BY days_completed DESC, cm.joined_at ASC`,
       [competitionId, competition.start_date, competition.end_date || null]
     );
@@ -64,6 +64,7 @@ export default async function handler(req, res) {
       position: idx + 1,
       user_id: m.user_id,
       display_name: m.display_name,
+      photo_url: m.photo_url,
       days_completed: parseInt(m.days_completed),
       total_days: totalDays,
       is_me: m.user_id === userId,

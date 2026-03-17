@@ -1,6 +1,6 @@
 # Un Dia a la Vez
 
-Una aplicacion web para construir habitos espirituales diarios. Incluye un calendario interactivo de habitos, lectura biblica diaria con texto y comentario, lectura en voz alta con inteligencia artificial, inicio de sesion con Microsoft y shortcuts para iPhone.
+Una aplicacion web para construir habitos espirituales diarios. Incluye un calendario interactivo de habitos con metas multiples, competencias entre usuarios con leaderboard, lectura biblica diaria con texto y comentario, lectura en voz alta con inteligencia artificial, inicio de sesion con Microsoft y shortcuts para iPhone.
 
 Disponible en **espanol**.
 
@@ -11,11 +11,25 @@ Disponible en **espanol**.
 ### Autenticacion con Microsoft
 
 - **Inicio de sesion gratuito** — Usa tu cuenta de Outlook, Hotmail o cualquier cuenta Microsoft
-- **Datos por usuario** — Cada persona tiene su propio calendario, meta y progreso
+- **Datos por usuario** — Cada persona tiene su propio calendario, metas y progreso
 - **Sesion persistente** — No necesitas iniciar sesion cada vez
-- **Foto de perfil** — Se muestra tu foto de Microsoft en la barra superior
-- **Migracion automatica** — Si ya tenias datos antes del login, se copian a tu perfil automaticamente
-- **Cerrar sesion** — Boton discreto en la parte superior de la app
+- **Foto de perfil** — Se muestra tu foto de Microsoft en el perfil
+- **Cerrar sesion** — Boton en la pestana de perfil
+
+### Metas multiples
+
+- **Meta principal** — Siempre tienes una meta por defecto
+- **Metas personalizadas** — Crea tantas metas como quieras (estudio personal, ejercicio, oracion, etc.)
+- **Emoji personalizable** — Elige un emoji para cada meta
+- **Selector de metas** — Pills horizontales scrolleables arriba del calendario para cambiar entre metas
+- **Progreso independiente** — Cada meta tiene sus propios dias marcados, racha y medallas
+
+### Competencias entre usuarios
+
+- **Crear competencias** — Crea una competencia y comparte el codigo de invitacion
+- **Unirse con codigo** — Cualquier usuario puede unirse con un codigo de 6 letras
+- **Leaderboard en tiempo real** — Rankings por dias completados con barras de progreso
+- **Animaciones** — Filas escalonadas, barras doradas con efecto glow para el lider
 
 ### Calendario de habitos
 
@@ -26,6 +40,12 @@ Disponible en **espanol**.
 - **Efectos visuales** — Particulas y animaciones al marcar un dia
 - **Sonidos** — Sonido al marcar y desmarcar dias
 - **Persistencia** — Tus datos se guardan en base de datos por usuario
+
+### Navegacion por pestanas
+
+- **Calendario** — Vista principal con selector de metas y calendario de habitos
+- **Competencias** — Lista de competencias, crear nuevas o unirse con codigo
+- **Perfil** — Tu foto, nombre, gestion de metas y cerrar sesion
 
 ### Texto del dia (Examinemos las Escrituras)
 
@@ -55,7 +75,7 @@ Disponible en **espanol**.
 
 ```
   ┌─────────────────────────────────┐
-  │  usuario@outlook.com   [Salir]  │  ← Sesion Microsoft
+  │    📖 Principal  🙏 Oracion  +  │  ← Selector de metas
   │       Mi Meta Diaria            │  ← Meta editable
   │       Un dia a la vez           │
   │                                 │
@@ -74,6 +94,8 @@ Disponible en **espanol**.
   │   Medallas: 🌱 🔥 ⭐ ...       │  ← Recompensas
   │                                 │
   │          [ Texto del dia 📖 ]   │  ← Lectura diaria
+  │                                 │
+  │  [ 📅 Calendario ] [ 🏆 ] [ 👤 ]│  ← Navegacion inferior
   └─────────────────────────────────┘
 ```
 
@@ -184,8 +206,12 @@ un-dia-a-la-vez/
 ├── api/                          # Serverless functions (Vercel)
 │   ├── _auth.js                  # Verificacion de tokens Microsoft
 │   ├── _db.js                    # Conexion a base de datos (multi-usuario)
+│   ├── goals.js                  # API metas (CRUD por usuario)
+│   ├── competitions.js           # API competencias (crear, listar, eliminar)
+│   ├── competition-join.js       # API unirse a competencia con codigo
+│   ├── leaderboard.js            # API ranking de competencia
 │   ├── daily-text.js             # Texto del dia + audio TTS
-│   ├── marked.js                 # API dias marcados (por usuario)
+│   ├── marked.js                 # API dias marcados (por usuario y meta)
 │   ├── settings.js               # API configuracion (por usuario)
 │   ├── sync.js                   # API sincronizacion (por usuario)
 │   ├── tts.js                    # API TTS personalizable
@@ -201,14 +227,20 @@ un-dia-a-la-vez/
 └── src/
     ├── main.jsx                  # Entry point con MsalProvider
     ├── index.css
-    ├── App.jsx                   # Router de autenticacion
+    ├── App.jsx                   # Router de autenticacion + navegacion por tabs
     ├── authConfig.js             # Configuracion MSAL (Microsoft)
     ├── useAuthFetch.js           # Hook para fetch autenticado
     ├── useUserPhoto.js           # Hook para foto de perfil Microsoft
     ├── components/
-    │   ├── EveryDayCalendar.jsx  # Calendario de habitos
+    │   ├── EveryDayCalendar.jsx  # Calendario de habitos (filtra por meta)
     │   ├── DailyReading.jsx      # Texto del dia + TTS
-    │   └── LoginPage.jsx         # Pantalla de inicio de sesion
+    │   ├── LoginPage.jsx         # Pantalla de inicio de sesion
+    │   ├── BottomNav.jsx         # Barra de navegacion inferior (3 tabs)
+    │   ├── GoalSelector.jsx      # Selector de metas (pills horizontales)
+    │   ├── GoalEditor.jsx        # Modal para crear/editar metas
+    │   ├── CompetitionList.jsx   # Lista de competencias + crear/unirse
+    │   ├── CompetitionDetail.jsx # Leaderboard de una competencia
+    │   └── ProfileTab.jsx        # Perfil de usuario + gestion de metas
     └── data/
         ├── dailyReadings.json    # 365 textos diarios con comentarios
         ├── bibleReadingSchedule.json  # Programa de lectura semanal
@@ -346,8 +378,18 @@ Todos los endpoints que reciben `Authorization: Bearer <token>` devuelven datos 
 |--------|------|-------------|
 | `GET` | `/api/settings` | Obtener meta y vista |
 | `PUT` | `/api/settings` | Guardar meta y/o vista |
-| `GET` | `/api/marked` | Obtener dias marcados |
-| `POST` | `/api/marked` | Marcar o desmarcar un dia |
+| `GET` | `/api/marked?goal_id=` | Obtener dias marcados (filtra por meta) |
+| `POST` | `/api/marked` | Marcar o desmarcar un dia `{ day_key, marked, goal_id? }` |
+| `GET` | `/api/goals` | Listar metas del usuario |
+| `POST` | `/api/goals` | Crear meta `{ name, emoji }` |
+| `PUT` | `/api/goals` | Editar meta `{ id, name?, emoji?, is_active? }` |
+| `DELETE` | `/api/goals` | Eliminar meta `{ id }` |
+| `GET` | `/api/competitions` | Listar competencias del usuario |
+| `POST` | `/api/competitions` | Crear competencia `{ name, display_name, start_date?, end_date? }` |
+| `DELETE` | `/api/competitions` | Eliminar competencia `{ id }` (solo creador) |
+| `POST` | `/api/competition-join` | Unirse con codigo `{ invite_code, display_name }` |
+| `GET` | `/api/leaderboard?id=` | Rankings de una competencia |
+| `GET` | `/api/sync?v=&goal_id=` | Sincronizacion (devuelve settings, marked, goals) |
 | `GET` | `/api/daily-text` | Texto del dia en JSON |
 | `GET` | `/api/daily-text?format=audio&part=text` | Audio TTS del texto |
 | `GET` | `/api/daily-text?format=audio&part=commentary` | Audio TTS del comentario |
@@ -355,6 +397,26 @@ Todos los endpoints que reciben `Authorization: Bearer <token>` devuelven datos 
 | `GET` | `/api/shortcut` | Descarga Shortcut "Texto del Dia" |
 | `GET` | `/api/shortcut-tts` | Descarga Shortcut "Lector TTS" |
 | `GET` | `/api/texto-diario` | Pagina web standalone del texto del dia |
+
+---
+
+## Base de datos
+
+La app usa PostgreSQL con las siguientes tablas:
+
+| Tabla | Descripcion |
+|-------|-------------|
+| `udv_user_settings` | Meta y vista por usuario |
+| `udv_user_marked_days` | Dias marcados por usuario y meta |
+| `udv_user_sync` | Version de sincronizacion por usuario |
+| `udv_user_goals` | Metas multiples por usuario |
+| `udv_competitions` | Competencias con codigo de invitacion |
+| `udv_competition_members` | Miembros de cada competencia |
+| `udv_settings` | Configuracion legacy (sin auth) |
+| `udv_marked_days` | Dias marcados legacy (sin auth) |
+| `udv_sync` | Version de sync legacy |
+
+Las tablas se crean automaticamente al arrancar la app.
 
 ---
 
@@ -367,6 +429,16 @@ Todos los endpoints que reciben `Authorization: Bearer <token>` devuelven datos 
 - **Build**: Vite 7
 - **TTS**: API de Text-to-Speech con voces neuronales (opcional)
 - **Deploy**: Vercel (serverless functions)
+
+---
+
+## Seguridad
+
+- Las variables de entorno (`.env`) **nunca** se suben al repositorio — estan en `.gitignore`
+- El Client ID de Microsoft es publico por diseno (SPA), no es un secreto
+- Las API keys de TTS solo estan en el servidor, nunca se exponen al frontend
+- Los tokens JWT se verifican con las llaves publicas de Microsoft (JWKS)
+- Cada usuario solo puede ver y modificar sus propios datos
 
 ---
 

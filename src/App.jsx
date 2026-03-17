@@ -96,6 +96,8 @@ function App() {
             <CompetitionList
               authFetch={authFetch}
               onSelectCompetition={setSelectedCompetition}
+              userName={userName}
+              photoUrl={photoUrl}
             />
           )}
         </div>

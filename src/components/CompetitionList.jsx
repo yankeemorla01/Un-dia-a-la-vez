@@ -3,7 +3,7 @@ import { Plus, LogIn, Trophy, Users, Copy, Check } from 'lucide-react';
 
 const API = '/api';
 
-export default function CompetitionList({ authFetch, onSelectCompetition }) {
+export default function CompetitionList({ authFetch, onSelectCompetition, userName, photoUrl }) {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -12,11 +12,11 @@ export default function CompetitionList({ authFetch, onSelectCompetition }) {
 
   // Create form
   const [createName, setCreateName] = useState('');
-  const [createDisplayName, setCreateDisplayName] = useState('');
+  const [createDisplayName, setCreateDisplayName] = useState(userName || '');
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
-  const [joinDisplayName, setJoinDisplayName] = useState('');
+  const [joinDisplayName, setJoinDisplayName] = useState(userName || '');
   const [joinError, setJoinError] = useState('');
 
   const loadCompetitions = () => {
@@ -39,6 +39,7 @@ export default function CompetitionList({ authFetch, onSelectCompetition }) {
       body: JSON.stringify({
         name: createName.trim(),
         display_name: createDisplayName.trim(),
+        photo_url: photoUrl || null,
       }),
     })
       .then(r => r.json())
@@ -59,6 +60,7 @@ export default function CompetitionList({ authFetch, onSelectCompetition }) {
       body: JSON.stringify({
         invite_code: joinCode.trim(),
         display_name: joinDisplayName.trim(),
+        photo_url: photoUrl || null,
       }),
     })
       .then(r => r.json())

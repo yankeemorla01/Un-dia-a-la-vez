@@ -100,9 +100,16 @@ export async function initDB() {
       competition_id UUID NOT NULL,
       user_id VARCHAR(255) NOT NULL,
       display_name VARCHAR(100) NOT NULL,
+      photo_url TEXT,
       joined_at TIMESTAMP DEFAULT NOW(),
       PRIMARY KEY (competition_id, user_id)
     );
+
+    -- Add photo_url column if not exists
+    DO $$ BEGIN
+      ALTER TABLE udv_competition_members ADD COLUMN photo_url TEXT;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$;
   `);
 }
 
