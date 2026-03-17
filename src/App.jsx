@@ -12,6 +12,24 @@ import GoalEditor from './components/GoalEditor'
 import CompetitionList from './components/CompetitionList'
 import CompetitionDetail from './components/CompetitionDetail'
 import ProfileTab from './components/ProfileTab'
+import { Component } from 'react'
+
+class ErrorBoundary extends Component {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-center py-20">
+          <p className="text-sm text-[#6a5a40] font-sans">Algo salió mal</p>
+          <button onClick={() => { this.setState({ hasError: false }); this.props.onReset?.(); }}
+            className="mt-4 text-[#d4af37] text-sm font-sans underline">Volver</button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const API = '/api'
 
@@ -87,11 +105,13 @@ function App() {
       {currentTab === 'competitions' && (
         <div style={{ animation: 'tab-fade 0.25s ease both' }}>
           {selectedCompetition ? (
-            <CompetitionDetail
-              competitionId={selectedCompetition}
-              authFetch={authFetch}
-              onBack={() => setSelectedCompetition(null)}
-            />
+            <ErrorBoundary onReset={() => setSelectedCompetition(null)}>
+              <CompetitionDetail
+                competitionId={selectedCompetition}
+                authFetch={authFetch}
+                onBack={() => setSelectedCompetition(null)}
+              />
+            </ErrorBoundary>
           ) : (
             <CompetitionList
               authFetch={authFetch}

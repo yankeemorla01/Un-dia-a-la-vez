@@ -10,9 +10,12 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
 
   useEffect(() => {
     authFetch(`${API}/leaderboard?id=${competitionId}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('API error');
+        return r.json();
+      })
       .then(d => {
-        setData(d);
+        if (d && d.leaderboard) setData(d);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -22,8 +25,11 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
   useEffect(() => {
     const interval = setInterval(() => {
       authFetch(`${API}/leaderboard?id=${competitionId}`)
-        .then(r => r.json())
-        .then(d => { if (d.leaderboard) setData(d); })
+        .then(r => {
+          if (!r.ok) return;
+          return r.json();
+        })
+        .then(d => { if (d && d.leaderboard) setData(d); })
         .catch(() => {});
     }, 10000);
     return () => clearInterval(interval);
@@ -104,13 +110,13 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
                 ) : (
                   <div className="w-8 h-8 rounded-full border border-[#3a3420] bg-[#1a1812] flex items-center justify-center flex-shrink-0">
                     <span className="text-[11px] text-[#6a5a40] font-sans font-bold">
-                      {member.display_name.charAt(0).toUpperCase()}
+                      {(member.display_name || '?').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <span className={`text-sm font-sans ${member.is_me ? 'text-[#d4af37] font-bold' : 'text-[#e0d8c8]'}`}>
-                    {member.display_name}
+                    {member.display_name || 'Usuario'}
                     {member.is_me && <span className="text-[9px] text-[#8a7a50] ml-1">(tú)</span>}
                   </span>
                 </div>
