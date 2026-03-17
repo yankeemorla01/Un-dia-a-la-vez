@@ -323,7 +323,7 @@ export default function EveryDayCalendar({ goalId = null }) {
 
   return (
     <div className="flex flex-col items-center relative overflow-x-hidden"
-      style={{ background: "#0d0c0a", color: "#e0d8c8", fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+      style={{ color: "#e0d8c8", fontFamily: "'Georgia', 'Times New Roman', serif" }}>
 
       <style>{`
         @keyframes particle-fly { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--tx),var(--ty)) scale(0.2);opacity:0} }
@@ -337,7 +337,7 @@ export default function EveryDayCalendar({ goalId = null }) {
         input[type="text"]::-webkit-input-placeholder { color: #6a5a40; opacity: 0.5; }
       `}</style>
 
-      <div className="fixed inset-0 pointer-events-none z-0"
+      <div className="absolute inset-0 pointer-events-none z-0"
         style={{ background: "radial-gradient(ellipse at top, rgba(212,175,55,0.05) 0%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
 
       <div className="w-full max-w-6xl px-4 py-8 z-10 flex flex-col items-center animate-[fadeSlide_0.6s_ease_both]">
@@ -545,7 +545,7 @@ export default function EveryDayCalendar({ goalId = null }) {
       {particles.map(p => <Particle key={p.id} {...p} onDone={removeParticle} />)}
 
       {toast && (
-        <div className="fixed bottom-10 left-1/2 w-max max-w-[90vw] bg-[#131109] border border-[#d4af37] rounded-2xl p-4 flex items-center gap-4 shadow-[0_10px_40px_rgba(212,175,55,0.2)] z-[1000]"
+        <div className="fixed bottom-20 left-1/2 w-max max-w-[90vw] bg-[#131109] border border-[#d4af37] rounded-2xl p-4 flex items-center gap-4 shadow-[0_10px_40px_rgba(212,175,55,0.2)] z-[1000]"
           style={{ animation: "toast-in 3.5s ease forwards" }}>
           <span className="text-4xl animate-bounce">{toast.emoji}</span>
           <div>
