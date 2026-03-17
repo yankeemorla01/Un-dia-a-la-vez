@@ -1,12 +1,19 @@
 # Un Dia a la Vez
 
-Una aplicacion web para construir habitos espirituales diarios. Incluye un calendario interactivo de habitos, lectura biblica diaria con texto y comentario, y lectura en voz alta con inteligencia artificial.
+Una aplicacion web para construir habitos espirituales diarios. Incluye un calendario interactivo de habitos, lectura biblica diaria con texto y comentario, lectura en voz alta con inteligencia artificial, inicio de sesion con Microsoft y shortcuts para iPhone.
 
 Disponible en **espanol**.
 
 ---
 
 ## Funcionalidades
+
+### Autenticacion con Microsoft
+
+- **Inicio de sesion gratuito** — Usa tu cuenta de Outlook, Hotmail o cualquier cuenta Microsoft
+- **Datos por usuario** — Cada persona tiene su propio calendario, meta y progreso
+- **Sesion persistente** — No necesitas iniciar sesion cada vez
+- **Cerrar sesion** — Boton discreto en la parte superior de la app
 
 ### Calendario de habitos
 
@@ -16,7 +23,7 @@ Disponible en **espanol**.
 - **9 medallas** — Desde 1 dia hasta 365 dias (semilla, fuego, estrella, trofeo...)
 - **Efectos visuales** — Particulas y animaciones al marcar un dia
 - **Sonidos** — Sonido al marcar y desmarcar dias
-- **Persistencia** — Tus datos se guardan en base de datos
+- **Persistencia** — Tus datos se guardan en base de datos por usuario
 
 ### Texto del dia (Examinemos las Escrituras)
 
@@ -33,12 +40,20 @@ Disponible en **espanol**.
 - **Reproduccion fluida** — Ambos audios se descargan en paralelo para que la transicion entre voces sea instantanea
 - **Controles simples** — Un boton para reproducir/detener, se detiene automaticamente al cambiar de dia
 
+### Shortcuts de iPhone
+
+- **Texto del Dia** — Shortcut que lee el texto diario con voces de IA y marca el dia como completado
+- **Lector TTS** — Shortcut personalizable donde eliges texto, voz (6 opciones), idioma y emocion (10 estilos)
+- **Descarga directa** — Los shortcuts se descargan e instalan desde Safari
+- **Automatizacion** — Configura lectura automatica cada manana
+
 ---
 
 ## Como se ve
 
 ```
   ┌─────────────────────────────────┐
+  │  usuario@outlook.com   [Salir]  │  ← Sesion Microsoft
   │       Mi Meta Diaria            │  ← Meta editable
   │       Un dia a la vez           │
   │                                 │
@@ -84,6 +99,7 @@ Disponible en **espanol**.
 
 - Node.js 18+
 - PostgreSQL
+- Una app registrada en Microsoft Entra ID (gratis)
 
 ### 1. Clonar el repositorio
 
@@ -98,7 +114,16 @@ cd Un-dia-a-la-vez
 npm install
 ```
 
-### 3. Configurar variables de entorno
+### 3. Registrar app en Microsoft (gratis)
+
+1. Ve a [portal.azure.com](https://portal.azure.com) → **App registrations** → **New registration**
+2. Nombre: `Un dia a la vez`
+3. Supported account types: **Accounts in any organizational directory and personal Microsoft accounts**
+4. Redirect URI: selecciona **Single-page application (SPA)** y pon `http://localhost:5173`
+5. Click **Register** y copia el **Application (client) ID**
+6. En **Authentication**, agrega tambien tu URL de produccion (ej. `https://tu-app.vercel.app`)
+
+### 4. Configurar variables de entorno
 
 Crea un archivo `.env` en la raiz del proyecto:
 
@@ -106,7 +131,10 @@ Crea un archivo `.env` en la raiz del proyecto:
 # Base de datos PostgreSQL
 MONGODB_URI=postgresql://usuario:contrasena@host:puerto/nombre_db
 
-# Text-to-Speech — Server-side (para el API /api/daily-text)
+# Microsoft Auth (Client ID — es publico, no es un secreto)
+VITE_MICROSOFT_CLIENT_ID=tu_client_id_de_azure
+
+# Text-to-Speech — Server-side (para el API /api/daily-text y /api/tts)
 TTS_API_URL=tu_url_de_api_tts
 TTS_API_KEY=tu_api_key_tts
 
@@ -115,11 +143,13 @@ VITE_TTS_API_URL=tu_url_de_api_tts
 VITE_TTS_API_KEY=tu_api_key_tts
 ```
 
+> **Nota sobre Microsoft Auth:** El Client ID es publico por diseno en aplicaciones SPA. No necesitas el Client Secret — MSAL.js usa flujo publico. Cada usuario inicia sesion con su propia cuenta Microsoft y sus datos se guardan por separado en la base de datos.
+
 > **Nota sobre TTS:** La lectura en voz alta usa una API de Text-to-Speech compatible con voces neuronales de Microsoft Azure (como `es-MX-DaliaNeural` y `es-MX-JorgeNeural`). Necesitas tu propia API que acepte un POST con `{ text, voice, style }` y devuelva audio. Las variables `TTS_*` (sin VITE_) son solo del servidor y nunca se exponen al navegador. Las variables `VITE_TTS_*` son para el frontend. Si no configuras estas variables, la app funciona sin audio.
 >
 > Puedes usar servicios como [Azure Speech](https://azure.microsoft.com/en-us/products/ai-services/text-to-speech), [Google Cloud TTS](https://cloud.google.com/text-to-speech), o cualquier API compatible.
 
-### 4. Iniciar la aplicacion
+### 5. Iniciar la aplicacion
 
 Necesitas 2 terminales:
 
@@ -131,9 +161,9 @@ npm run server
 npm run dev
 ```
 
-### 5. Abrir
+### 6. Abrir
 
-Ve a `http://localhost:5173` en tu navegador.
+Ve a `http://localhost:5173` en tu navegador. Veras la pantalla de inicio de sesion con Microsoft.
 
 ---
 
@@ -150,27 +180,37 @@ un-dia-a-la-vez/
 ├── vercel.json                   # Configuracion para deploy en Vercel
 │
 ├── api/                          # Serverless functions (Vercel)
-│   ├── _db.js                    # Conexion a base de datos
-│   ├── marked.js                 # API dias marcados
-│   ├── settings.js               # API configuracion
-│   └── sync.js                   # API sincronizacion
+│   ├── _auth.js                  # Verificacion de tokens Microsoft
+│   ├── _db.js                    # Conexion a base de datos (multi-usuario)
+│   ├── daily-text.js             # Texto del dia + audio TTS
+│   ├── marked.js                 # API dias marcados (por usuario)
+│   ├── settings.js               # API configuracion (por usuario)
+│   ├── sync.js                   # API sincronizacion (por usuario)
+│   ├── tts.js                    # API TTS personalizable
+│   ├── shortcut.js               # Descarga Shortcut "Texto del Dia"
+│   └── shortcut-tts.js           # Descarga Shortcut "Lector TTS"
 │
 ├── scripts/
 │   ├── jwpub_extract.py          # Extractor de datos biblicos
-│   └── analyze_tts_styles.cjs    # Analizador de estilos emocionales para TTS
+│   ├── analyze_tts_styles.cjs    # Analizador de estilos emocionales para TTS
+│   ├── build-shortcut.cjs        # Generador de Shortcut "Texto del Dia"
+│   └── build-shortcut-tts.cjs    # Generador de Shortcut "Lector TTS"
 │
 └── src/
-    ├── main.jsx
+    ├── main.jsx                  # Entry point con MsalProvider
     ├── index.css
-    ├── App.jsx
+    ├── App.jsx                   # Router de autenticacion
+    ├── authConfig.js             # Configuracion MSAL (Microsoft)
+    ├── useAuthFetch.js           # Hook para fetch autenticado
     ├── components/
-    │   ├── EveryDayCalendar.jsx   # Calendario de habitos
-    │   └── DailyReading.jsx       # Texto del dia + TTS
+    │   ├── EveryDayCalendar.jsx  # Calendario de habitos
+    │   ├── DailyReading.jsx      # Texto del dia + TTS
+    │   └── LoginPage.jsx         # Pantalla de inicio de sesion
     └── data/
-        ├── dailyReadings.json     # 365 textos diarios con comentarios
+        ├── dailyReadings.json    # 365 textos diarios con comentarios
         ├── bibleReadingSchedule.json  # Programa de lectura semanal
-        ├── bibleBooks.json        # Mapa de abreviaturas biblicas
-        └── ttsStyles.json         # Estilos emocionales por dia (generado)
+        ├── bibleBooks.json       # Mapa de abreviaturas biblicas
+        └── ttsStyles.json        # Estilos emocionales por dia (generado)
 ```
 
 ---
@@ -219,18 +259,19 @@ Los estilos disponibles dependen de tu proveedor de TTS. Los estilos usados aqui
 
 ---
 
-## Shortcut de iPhone
+## Shortcuts de iPhone
 
-La app incluye un Shortcut de iOS descargable que lee el texto del dia con voces de IA directamente desde tu iPhone.
+La app incluye dos Shortcuts de iOS descargables.
 
-### Como instalarlo
+### Shortcut 1: Texto del Dia
+
+Lee el texto biblico diario con voces de IA y marca el dia como completado.
 
 1. Abre Safari en tu iPhone y ve a `https://tu-app.vercel.app/api/shortcut`
 2. El archivo se descarga y se abre en la app Shortcuts
 3. Toca **"Agregar Shortcut"**
 
-### Que hace el Shortcut
-
+**Que hace:**
 1. Descarga el texto del dia desde la API
 2. Muestra una notificacion con la fecha
 3. Reproduce el texto biblico (voz femenina)
@@ -238,27 +279,56 @@ La app incluye un Shortcut de iOS descargable que lee el texto del dia con voces
 5. Marca el dia como completado en tu calendario
 6. Muestra la fuente
 
+### Shortcut 2: Lector TTS
+
+Shortcut personalizable para leer cualquier texto con voces de IA.
+
+1. Abre Safari en tu iPhone y ve a `https://tu-app.vercel.app/api/shortcut-tts`
+2. El archivo se descarga y se abre en la app Shortcuts
+3. Toca **"Agregar Shortcut"**
+
+**Que hace:**
+1. Te pregunta que texto quieres que lea
+2. Te muestra 6 voces para elegir (espanol, ingles, portugues, frances)
+3. Te muestra 10 emociones (alegre, triste, enojado, emocionado, etc.)
+4. Reproduce el audio con la voz y emocion elegidas
+
+**Voces disponibles:**
+| Voz | Idioma | Genero |
+|-----|--------|--------|
+| Dalia | Espanol (Mexico) | Mujer |
+| Jorge | Espanol (Mexico) | Hombre |
+| Jenny | Ingles (USA) | Mujer |
+| Guy | Ingles (USA) | Hombre |
+| Francisca | Portugues (Brasil) | Mujer |
+| Denise | Frances (Francia) | Mujer |
+
 ### Lectura automatica cada manana
 
-1. Abre la app **Shortcuts** → pestaña **Automatizacion**
+1. Abre la app **Shortcuts** → pestana **Automatizacion**
 2. Toca **+ Nueva Automatizacion** → **Hora del dia**
 3. Elige tu hora (ej. 7:00 AM), repetir **Diariamente**
 4. Selecciona el shortcut **"Texto del Dia"**
 5. Activa **"Ejecutar inmediatamente"**
 
-### Generar tu propio Shortcut
+### Generar tus propios Shortcuts
 
-Si haces fork del proyecto, necesitas generar y firmar tu propio shortcut:
+Si haces fork del proyecto, necesitas generar y firmar tus propios shortcuts:
 
 ```bash
-# 1. Edita la URL base en scripts/build-shortcut.cjs
-# 2. Genera el archivo .shortcut
+# 1. Edita la URL base en los scripts
+# 2. Genera los archivos .shortcut
 node scripts/build-shortcut.cjs
+node scripts/build-shortcut-tts.cjs
 
-# 3. Firma el shortcut (requiere macOS)
+# 3. Firma los shortcuts (requiere macOS)
 shortcuts sign --mode anyone \
   --input public/texto-del-dia.shortcut \
   --output public/texto-del-dia-signed.shortcut
+
+shortcuts sign --mode anyone \
+  --input public/lector-tts.shortcut \
+  --output public/lector-tts-signed.shortcut
 ```
 
 El comando `shortcuts sign` viene preinstalado en macOS. El modo `anyone` permite que cualquiera instale el shortcut.
@@ -266,6 +336,8 @@ El comando `shortcuts sign` viene preinstalado en macOS. El modo `anyone` permit
 ---
 
 ## API Endpoints
+
+Todos los endpoints que reciben `Authorization: Bearer <token>` devuelven datos del usuario autenticado. Sin token, usan los datos legacy (compartidos).
 
 | Metodo | Ruta | Descripcion |
 |--------|------|-------------|
@@ -276,16 +348,19 @@ El comando `shortcuts sign` viene preinstalado en macOS. El modo `anyone` permit
 | `GET` | `/api/daily-text` | Texto del dia en JSON |
 | `GET` | `/api/daily-text?format=audio&part=text` | Audio TTS del texto |
 | `GET` | `/api/daily-text?format=audio&part=commentary` | Audio TTS del comentario |
-| `GET` | `/api/shortcut` | Descarga el Shortcut de iOS |
+| `POST` | `/api/tts` | TTS personalizable (text, voice, style) |
+| `GET` | `/api/shortcut` | Descarga Shortcut "Texto del Dia" |
+| `GET` | `/api/shortcut-tts` | Descarga Shortcut "Lector TTS" |
 | `GET` | `/api/texto-diario` | Pagina web standalone del texto del dia |
 
 ---
 
 ## Tecnologias
 
-- **Frontend**: React 19, Tailwind CSS 4, Lucide Icons
+- **Frontend**: React 19, Tailwind CSS 4, Lucide Icons, MSAL.js
+- **Autenticacion**: Microsoft Entra ID (Azure AD) — gratuito
 - **Backend**: Express 5, Node.js
-- **Base de datos**: PostgreSQL
+- **Base de datos**: PostgreSQL (multi-usuario)
 - **Build**: Vite 7
 - **TTS**: API de Text-to-Speech con voces neuronales (opcional)
 - **Deploy**: Vercel (serverless functions)
@@ -305,7 +380,9 @@ Este es un proyecto open source. Puedes:
 
 - El frontend y toda la logica del calendario, lectura biblica y TTS estan en el codigo
 - Los datos biblicos (365 textos diarios, programa de lectura, libros) estan en `src/data/`
-- Solo necesitas configurar tu propia base de datos PostgreSQL y, opcionalmente, tu propia API de TTS
+- Necesitas registrar tu propia app en Microsoft Entra ID (gratis) para la autenticacion
+- Necesitas configurar tu propia base de datos PostgreSQL
+- Opcionalmente, tu propia API de TTS para la lectura en voz alta
 - No se comparten credenciales ni API keys — cada quien configura las suyas en su `.env`
 
 ---

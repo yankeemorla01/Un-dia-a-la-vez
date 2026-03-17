@@ -39,10 +39,35 @@ export async function initDB() {
     INSERT INTO udv_sync (id, version)
     VALUES (1, 0)
     ON CONFLICT (id) DO NOTHING;
+
+    -- Multi-user tables
+    CREATE TABLE IF NOT EXISTS udv_user_settings (
+      user_id VARCHAR(255) PRIMARY KEY,
+      goal TEXT DEFAULT 'Mi Meta Diaria',
+      view_mode VARCHAR(10) DEFAULT 'month'
+    );
+    CREATE TABLE IF NOT EXISTS udv_user_marked_days (
+      user_id VARCHAR(255) NOT NULL,
+      day_key VARCHAR(20) NOT NULL,
+      marked BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      PRIMARY KEY (user_id, day_key)
+    );
+    CREATE TABLE IF NOT EXISTS udv_user_sync (
+      user_id VARCHAR(255) PRIMARY KEY,
+      version INTEGER DEFAULT 0
+    );
   `);
 }
 
-export async function bumpVersion() {
+export async function bumpVersion(userId) {
   const p = getPool();
-  await p.query('UPDATE udv_sync SET version = version + 1 WHERE id = 1');
+  if (userId) {
+    await p.query(
+      'INSERT INTO udv_user_sync (user_id, version) VALUES ($1, 1) ON CONFLICT (user_id) DO UPDATE SET version = udv_user_sync.version + 1',
+      [userId]
+    );
+  } else {
+    await p.query('UPDATE udv_sync SET version = version + 1 WHERE id = 1');
+  }
 }

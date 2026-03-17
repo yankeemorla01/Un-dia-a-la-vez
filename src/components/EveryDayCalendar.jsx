@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut } from "lucide-react";
+import { useMsal } from '@azure/msal-react';
+import { useAuthFetch } from '../useAuthFetch';
+import { useUserPhoto } from '../useUserPhoto';
 
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const WEEK_DAYS = ["D", "L", "M", "M", "J", "V", "S"];
@@ -101,11 +104,20 @@ export default function EveryDayCalendar() {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { instance, accounts } = useMsal();
+  const authFetch = useAuthFetch();
+  const photoUrl = useUserPhoto();
+  const userName = accounts[0]?.name || '';
+
   const versionRef = useRef(0);
+
+  const handleLogout = () => {
+    instance.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
+  };
 
   // Cargar datos de la base de datos al iniciar
   useEffect(() => {
-    fetch(`${API}/sync?v=0`).then(r => r.json()).then(data => {
+    authFetch(`${API}/sync?v=0`).then(r => r.json()).then(data => {
       if (data.changed) {
         setMarked(data.marked);
         if (data.settings.goal) setGoal(data.settings.goal);
@@ -117,12 +129,12 @@ export default function EveryDayCalendar() {
       console.error("Error cargando datos:", err);
       setLoading(false);
     });
-  }, []);
+  }, [authFetch]);
 
   // Polling: pregunta cada 3 segundos si hay cambios nuevos
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch(`${API}/sync?v=${versionRef.current}`)
+      authFetch(`${API}/sync?v=${versionRef.current}`)
         .then(r => r.json())
         .then(data => {
           if (data.changed) {
@@ -135,7 +147,7 @@ export default function EveryDayCalendar() {
         .catch(() => {});
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [authFetch]);
 
   const computeStreak = useCallback((m) => {
     let s = 0;
@@ -165,7 +177,7 @@ export default function EveryDayCalendar() {
   // Guardar meta en la base de datos
   const saveGoal = (newGoal) => {
     setGoal(newGoal);
-    fetch(`${API}/settings`, {
+    authFetch(`${API}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ goal: newGoal }),
@@ -175,7 +187,7 @@ export default function EveryDayCalendar() {
   // Guardar vista en la base de datos
   const saveViewMode = (mode) => {
     setViewMode(mode);
-    fetch(`${API}/settings`, {
+    authFetch(`${API}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ view_mode: mode }),
@@ -194,7 +206,7 @@ export default function EveryDayCalendar() {
       if (!willMark) delete next[key];
 
       // Guardar en la base de datos
-      fetch(`${API}/marked`, {
+      authFetch(`${API}/marked`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ day_key: key, marked: willMark }),
@@ -329,6 +341,31 @@ export default function EveryDayCalendar() {
         style={{ background: "radial-gradient(ellipse at top, rgba(212,175,55,0.05) 0%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
 
       <div className="w-full max-w-6xl px-4 py-8 z-10 flex flex-col items-center animate-[fadeSlide_0.6s_ease_both]">
+
+        {/* Barra superior con usuario y logout */}
+        <div className="w-full max-w-2xl flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            {photoUrl ? (
+              <img src={photoUrl} alt="" className="w-6 h-6 rounded-full border border-[#3a3420] object-cover" />
+            ) : (
+              <div className="w-6 h-6 rounded-full border border-[#3a3420] bg-[#1a1812] flex items-center justify-center">
+                <span className="text-[10px] text-[#6a5a40] font-sans font-bold">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <span className="text-[10px] text-[#6a5a40] font-sans truncate max-w-[180px]">
+              {userName}
+            </span>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-[10px] text-[#6a5a40] hover:text-[#d4af37] font-sans transition-colors"
+          >
+            <LogOut size={12} />
+            Cerrar sesión
+          </button>
+        </div>
 
         {/* Cabecera y Meta */}
         <div className="text-center w-full max-w-2xl mb-8">
