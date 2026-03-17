@@ -111,8 +111,10 @@ export default function EveryDayCalendar() {
 
   const versionRef = useRef(0);
 
-  const handleLogout = () => {
-    instance.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
+  const handleLogout = async () => {
+    const account = accounts[0];
+    await instance.logoutPopup({ account });
+    window.location.href = window.location.origin;
   };
 
   // Cargar datos de la base de datos al iniciar
