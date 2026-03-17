@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List } from "lucide-react";
 import { useMsal } from '@azure/msal-react';
 import { useAuthFetch } from '../useAuthFetch';
 import { useUserPhoto } from '../useUserPhoto';
@@ -94,7 +94,7 @@ function Particle({ x, y, emoji, id, onDone }) {
 
 const API = "/api";
 
-export default function EveryDayCalendar() {
+export default function EveryDayCalendar({ goalId = null }) {
   const [marked, setMarked] = useState({});
   const [goal, setGoal] = useState("Mi Meta Diaria");
   const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -111,15 +111,13 @@ export default function EveryDayCalendar() {
 
   const versionRef = useRef(0);
 
-  const handleLogout = async () => {
-    const account = accounts[0];
-    await instance.logoutPopup({ account });
-    window.location.href = window.location.origin;
-  };
+  // Build query params for goal filtering
+  const goalParam = goalId ? `&goal_id=${goalId}` : '';
 
   // Cargar datos de la base de datos al iniciar
   useEffect(() => {
-    authFetch(`${API}/sync?v=0`).then(r => r.json()).then(data => {
+    setLoading(true);
+    authFetch(`${API}/sync?v=0${goalParam}`).then(r => r.json()).then(data => {
       if (data.changed) {
         setMarked(data.marked);
         if (data.settings.goal) setGoal(data.settings.goal);
@@ -131,12 +129,12 @@ export default function EveryDayCalendar() {
       console.error("Error cargando datos:", err);
       setLoading(false);
     });
-  }, [authFetch]);
+  }, [authFetch, goalParam]);
 
   // Polling: pregunta cada 3 segundos si hay cambios nuevos
   useEffect(() => {
     const interval = setInterval(() => {
-      authFetch(`${API}/sync?v=${versionRef.current}`)
+      authFetch(`${API}/sync?v=${versionRef.current}${goalParam}`)
         .then(r => r.json())
         .then(data => {
           if (data.changed) {
@@ -149,7 +147,7 @@ export default function EveryDayCalendar() {
         .catch(() => {});
     }, 3000);
     return () => clearInterval(interval);
-  }, [authFetch]);
+  }, [authFetch, goalParam]);
 
   const computeStreak = useCallback((m) => {
     let s = 0;
@@ -211,7 +209,7 @@ export default function EveryDayCalendar() {
       authFetch(`${API}/marked`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day_key: key, marked: willMark }),
+        body: JSON.stringify({ day_key: key, marked: willMark, goal_id: goalId || undefined }),
       }).catch(err => console.error("Error guardando día:", err));
 
       if (willMark) {
@@ -343,31 +341,6 @@ export default function EveryDayCalendar() {
         style={{ background: "radial-gradient(ellipse at top, rgba(212,175,55,0.05) 0%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
 
       <div className="w-full max-w-6xl px-4 py-8 z-10 flex flex-col items-center animate-[fadeSlide_0.6s_ease_both]">
-
-        {/* Barra superior con usuario y logout */}
-        <div className="w-full max-w-2xl flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            {photoUrl ? (
-              <img src={photoUrl} alt="" className="w-6 h-6 rounded-full border border-[#3a3420] object-cover" />
-            ) : (
-              <div className="w-6 h-6 rounded-full border border-[#3a3420] bg-[#1a1812] flex items-center justify-center">
-                <span className="text-[10px] text-[#6a5a40] font-sans font-bold">
-                  {userName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <span className="text-[10px] text-[#6a5a40] font-sans truncate max-w-[180px]">
-              {userName}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-[10px] text-[#6a5a40] hover:text-[#d4af37] font-sans transition-colors"
-          >
-            <LogOut size={12} />
-            Cerrar sesión
-          </button>
-        </div>
 
         {/* Cabecera y Meta */}
         <div className="text-center w-full max-w-2xl mb-8">

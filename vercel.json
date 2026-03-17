@@ -9,6 +9,10 @@
     { "source": "/api/texto-diario", "destination": "/api/texto-diario" },
     { "source": "/api/shortcut", "destination": "/api/shortcut" },
     { "source": "/api/tts", "destination": "/api/tts" },
-    { "source": "/api/shortcut-tts", "destination": "/api/shortcut-tts" }
+    { "source": "/api/shortcut-tts", "destination": "/api/shortcut-tts" },
+    { "source": "/api/goals", "destination": "/api/goals" },
+    { "source": "/api/competitions", "destination": "/api/competitions" },
+    { "source": "/api/competition-join", "destination": "/api/competition-join" },
+    { "source": "/api/leaderboard", "destination": "/api/leaderboard" }
   ]
 }

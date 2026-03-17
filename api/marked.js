@@ -9,7 +9,19 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       if (userId) {
-        const { rows } = await pool.query('SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND marked = true', [userId]);
+        const goalId = req.query.goal_id || null;
+        let rows;
+        if (goalId) {
+          ({ rows } = await pool.query(
+            'SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND goal_id = $2 AND marked = true',
+            [userId, goalId]
+          ));
+        } else {
+          ({ rows } = await pool.query(
+            'SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND goal_id IS NULL AND marked = true',
+            [userId]
+          ));
+        }
         const marked = {};
         rows.forEach(r => { marked[r.day_key] = true; });
         return res.json(marked);
@@ -21,16 +33,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { day_key, marked } = req.body;
+      const { day_key, marked, goal_id } = req.body;
 
       if (userId) {
+        const goalId = goal_id || null;
         if (marked) {
           await pool.query(
-            'INSERT INTO udv_user_marked_days (user_id, day_key, marked) VALUES ($1, $2, true) ON CONFLICT (user_id, day_key) DO UPDATE SET marked = true',
-            [userId, day_key]
+            `INSERT INTO udv_user_marked_days (user_id, day_key, goal_id, marked) VALUES ($1, $2, $3, true)
+             ON CONFLICT ON CONSTRAINT udv_user_marked_days_unique DO UPDATE SET marked = true`,
+            [userId, day_key, goalId]
           );
         } else {
-          await pool.query('DELETE FROM udv_user_marked_days WHERE user_id = $1 AND day_key = $2', [userId, day_key]);
+          if (goalId) {
+            await pool.query('DELETE FROM udv_user_marked_days WHERE user_id = $1 AND day_key = $2 AND goal_id = $3', [userId, day_key, goalId]);
+          } else {
+            await pool.query('DELETE FROM udv_user_marked_days WHERE user_id = $1 AND day_key = $2 AND goal_id IS NULL', [userId, day_key]);
+          }
         }
         await bumpVersion(userId);
       } else {

@@ -57,6 +57,52 @@ export async function initDB() {
       user_id VARCHAR(255) PRIMARY KEY,
       version INTEGER DEFAULT 0
     );
+
+    -- Goals (metas multiples por usuario)
+    CREATE TABLE IF NOT EXISTS udv_user_goals (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id VARCHAR(255) NOT NULL,
+      name VARCHAR(200) NOT NULL,
+      emoji VARCHAR(10) DEFAULT '📖',
+      sort_order INTEGER DEFAULT 0,
+      is_active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- Add goal_id to marked days (nullable for legacy data)
+    DO $$ BEGIN
+      ALTER TABLE udv_user_marked_days ADD COLUMN goal_id UUID;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$;
+
+    -- Drop old PK and create new one with goal_id
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'udv_user_marked_days_unique'
+      ) THEN
+        ALTER TABLE udv_user_marked_days DROP CONSTRAINT IF EXISTS udv_user_marked_days_pkey;
+        ALTER TABLE udv_user_marked_days ADD CONSTRAINT udv_user_marked_days_unique UNIQUE (user_id, day_key, goal_id);
+      END IF;
+    END $$;
+
+    -- Competitions (competencias)
+    CREATE TABLE IF NOT EXISTS udv_competitions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      created_by VARCHAR(255) NOT NULL,
+      invite_code VARCHAR(8) UNIQUE NOT NULL,
+      start_date VARCHAR(20) NOT NULL,
+      end_date VARCHAR(20),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS udv_competition_members (
+      competition_id UUID NOT NULL,
+      user_id VARCHAR(255) NOT NULL,
+      display_name VARCHAR(100) NOT NULL,
+      joined_at TIMESTAMP DEFAULT NOW(),
+      PRIMARY KEY (competition_id, user_id)
+    );
   `);
 }
 

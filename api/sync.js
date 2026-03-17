@@ -23,9 +23,24 @@ export default async function handler(req, res) {
       const { rows: settingsRows } = await pool.query(
         'SELECT goal, view_mode FROM udv_user_settings WHERE user_id = $1', [userId]
       );
-      const { rows: markedRows } = await pool.query(
-        'SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND marked = true', [userId]
+      const { rows: goals } = await pool.query(
+        'SELECT id, name, emoji, sort_order, is_active, created_at FROM udv_user_goals WHERE user_id = $1 ORDER BY sort_order, created_at',
+        [userId]
       );
+
+      const goalId = req.query.goal_id || null;
+      let markedRows;
+      if (goalId) {
+        ({ rows: markedRows } = await pool.query(
+          'SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND goal_id = $2 AND marked = true',
+          [userId, goalId]
+        ));
+      } else {
+        ({ rows: markedRows } = await pool.query(
+          'SELECT day_key FROM udv_user_marked_days WHERE user_id = $1 AND goal_id IS NULL AND marked = true',
+          [userId]
+        ));
+      }
 
       const marked = {};
       markedRows.forEach(r => { marked[r.day_key] = true; });
@@ -35,6 +50,7 @@ export default async function handler(req, res) {
         version: currentVersion,
         settings: settingsRows[0] || { goal: 'Mi Meta Diaria', view_mode: 'month' },
         marked,
+        goals,
       });
     }
 
