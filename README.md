@@ -13,6 +13,8 @@ Disponible en **espanol**.
 - **Inicio de sesion gratuito** — Usa tu cuenta de Outlook, Hotmail o cualquier cuenta Microsoft
 - **Datos por usuario** — Cada persona tiene su propio calendario, meta y progreso
 - **Sesion persistente** — No necesitas iniciar sesion cada vez
+- **Foto de perfil** — Se muestra tu foto de Microsoft en la barra superior
+- **Migracion automatica** — Si ya tenias datos antes del login, se copian a tu perfil automaticamente
 - **Cerrar sesion** — Boton discreto en la parte superior de la app
 
 ### Calendario de habitos
@@ -202,6 +204,7 @@ un-dia-a-la-vez/
     ├── App.jsx                   # Router de autenticacion
     ├── authConfig.js             # Configuracion MSAL (Microsoft)
     ├── useAuthFetch.js           # Hook para fetch autenticado
+    ├── useUserPhoto.js           # Hook para foto de perfil Microsoft
     ├── components/
     │   ├── EveryDayCalendar.jsx  # Calendario de habitos
     │   ├── DailyReading.jsx      # Texto del dia + TTS
