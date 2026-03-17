@@ -103,42 +103,16 @@ export default function EveryDayCalendar() {
   const [particles, setParticles] = useState([]);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showMigrate, setShowMigrate] = useState(false);
-  const [migrating, setMigrating] = useState(false);
 
   const { instance, accounts } = useMsal();
   const authFetch = useAuthFetch();
   const photoUrl = useUserPhoto();
   const userName = accounts[0]?.name || '';
-  const userEmail = accounts[0]?.username || '';
 
   const versionRef = useRef(0);
 
   const handleLogout = () => {
     instance.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
-  };
-
-  const handleMigrate = async () => {
-    setMigrating(true);
-    try {
-      const res = await authFetch(`${API}/migrate-legacy`, { method: 'POST' });
-      const data = await res.json();
-      if (data.ok) {
-        // Reload data after migration
-        const syncRes = await authFetch(`${API}/sync?v=0`);
-        const syncData = await syncRes.json();
-        if (syncData.changed) {
-          setMarked(syncData.marked);
-          if (syncData.settings.goal) setGoal(syncData.settings.goal);
-          if (syncData.settings.view_mode) setViewMode(syncData.settings.view_mode);
-          versionRef.current = syncData.version;
-        }
-        setShowMigrate(false);
-      }
-    } catch (err) {
-      console.error("Error migrando datos:", err);
-    }
-    setMigrating(false);
   };
 
   // Cargar datos de la base de datos al iniciar
@@ -149,10 +123,6 @@ export default function EveryDayCalendar() {
         if (data.settings.goal) setGoal(data.settings.goal);
         if (data.settings.view_mode) setViewMode(data.settings.view_mode);
         versionRef.current = data.version;
-      }
-      // Show migrate button if user has no data yet
-      if (!data.changed || (data.version === 0 && Object.keys(data.marked || {}).length === 0)) {
-        setShowMigrate(true);
       }
       setLoading(false);
     }).catch(err => {
@@ -396,22 +366,6 @@ export default function EveryDayCalendar() {
             Cerrar sesión
           </button>
         </div>
-
-        {/* Banner de migración de datos legacy */}
-        {showMigrate && (
-          <div className="w-full max-w-2xl mb-4 p-3 rounded-lg border border-[#3a3420] bg-[#1a1812]/80 text-center">
-            <p className="text-xs text-[#b89d5a] mb-2 font-sans">
-              ¿Tenías datos antes de iniciar sesión? Puedes migrarlos a tu cuenta.
-            </p>
-            <button
-              onClick={handleMigrate}
-              disabled={migrating}
-              className="px-4 py-1.5 rounded-md bg-[#d4af37] text-black text-xs font-sans font-bold hover:bg-[#b89d2a] transition-colors disabled:opacity-50"
-            >
-              {migrating ? 'Migrando...' : 'Migrar mis datos'}
-            </button>
-          </div>
-        )}
 
         {/* Cabecera y Meta */}
         <div className="text-center w-full max-w-2xl mb-8">

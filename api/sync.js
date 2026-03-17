@@ -1,4 +1,4 @@
-import { getPool, initDB } from './_db.js';
+import { getPool, initDB, migrateLegacyData } from './_db.js';
 import { getUserId } from './_auth.js';
 
 export default async function handler(req, res) {
@@ -10,6 +10,9 @@ export default async function handler(req, res) {
     const userId = await getUserId(req);
 
     if (userId) {
+      // Si es el primer usuario, migrar datos legacy automaticamente
+      await migrateLegacyData(userId);
+
       const { rows: syncRows } = await pool.query(
         'SELECT version FROM udv_user_sync WHERE user_id = $1', [userId]
       );

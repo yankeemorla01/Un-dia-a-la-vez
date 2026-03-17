@@ -9,7 +9,6 @@
     { "source": "/api/texto-diario", "destination": "/api/texto-diario" },
     { "source": "/api/shortcut", "destination": "/api/shortcut" },
     { "source": "/api/tts", "destination": "/api/tts" },
-    { "source": "/api/shortcut-tts", "destination": "/api/shortcut-tts" },
-    { "source": "/api/migrate-legacy", "destination": "/api/migrate-legacy" }
+    { "source": "/api/shortcut-tts", "destination": "/api/shortcut-tts" }
   ]
 }

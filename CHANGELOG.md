@@ -7,16 +7,13 @@ Todos los cambios notables de este proyecto se documentan aqui.
 ## [1.3.1] - 2026-03-17
 
 ### Agregado
-- **Boton "Migrar mis datos"** — Si el usuario tenia datos antes de crear cuenta, puede migrarlos con un clic
-- **Endpoint `/api/migrate-legacy`** — Copia datos legacy (dias marcados, configuracion) al perfil del usuario autenticado
+- **Migracion automatica de datos legacy** — El primer usuario que inicia sesion recibe los datos existentes automaticamente
 - **Foto de perfil Microsoft** — Se muestra la foto de la cuenta Microsoft del usuario en la barra superior
 - `src/useUserPhoto.js` — Hook para obtener foto de perfil desde Microsoft Graph API
-- `api/migrate-legacy.js` — Endpoint de migracion de datos legacy
 
 ### Modificados
 - `api/_db.js` — Nueva funcion `migrateLegacyData()` que copia datos de tablas legacy a tablas per-user
-- `src/components/EveryDayCalendar.jsx` — Banner de migracion para usuarios nuevos sin datos
-- `vercel.json` — Ruta para `/api/migrate-legacy`
+- `api/sync.js` — Llama migracion automatica en primer sync autenticado
 
 ---
 
