@@ -7,6 +7,7 @@ const API = '/api';
 export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoalsChange, onLogout }) {
   const [editingGoal, setEditingGoal] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [confirmDeleteGoal, setConfirmDeleteGoal] = useState(null);
 
   // Theme
   const [lightMode, setLightMode] = useState(() => localStorage.getItem('udv-theme') === 'light');
@@ -149,7 +150,7 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
                 <Edit2 size={14} />
               </button>
               <button
-                onClick={() => handleDeleteGoal(goal.id)}
+                onClick={() => setConfirmDeleteGoal(goal)}
                 className="text-[#6a5a40] hover:text-[#ff6b6b] transition-colors p-1"
               >
                 <Trash2 size={14} />
@@ -260,8 +261,43 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
         />
       )}
 
+      {/* Goal delete confirmation */}
+      {confirmDeleteGoal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setConfirmDeleteGoal(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl p-5 text-center"
+            style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.2s ease both' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <Trash2 size={32} className="mx-auto mb-3" style={{ color: '#ff6b6b' }} />
+            <p className="text-sm text-[#e0d8c8] font-sans mb-1">Eliminar "{confirmDeleteGoal.emoji} {confirmDeleteGoal.name}"?</p>
+            <p className="text-[10px] text-[#6a5a40] font-sans mb-4">Se borrarán todos los días marcados de esta meta</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDeleteGoal(null)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { handleDeleteGoal(confirmDeleteGoal.id); setConfirmDeleteGoal(null); }}
+                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-white"
+                style={{ background: '#dc2626' }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modal-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       `}</style>
     </div>
   );

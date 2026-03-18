@@ -45,14 +45,15 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
         goal_id: createGoalId === 'none' ? null : createGoalId,
       }),
     })
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(() => {
         setShowCreate(false);
         setCreateName('');
         setCreateDisplayName(userName || '');
         setCreateGoalId('none');
         loadCompetitions();
-      });
+      })
+      .catch(() => {});
   };
 
   const handleJoin = () => {
@@ -77,7 +78,8 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
           setJoinDisplayName(userName || '');
           loadCompetitions();
         }
-      });
+      })
+      .catch(() => setJoinError('Error de conexión'));
   };
 
   const handleDelete = (id) => {
@@ -86,11 +88,15 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
       .then(() => {
         setConfirmDelete(null);
         loadCompetitions();
-      });
+      })
+      .catch(() => setConfirmDelete(null));
   };
 
   const copyCode = (code, id) => {
@@ -283,12 +289,14 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
                     <Users size={12} />
                     <span className="text-[10px] font-sans">{comp.member_count}</span>
                   </div>
-                  <button
-                    onClick={e => { e.stopPropagation(); setConfirmDelete(comp.id); }}
-                    className="text-[#5a5040] hover:text-[#ff6b6b] transition-colors p-1"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {comp.is_creator && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmDelete(comp.id); }}
+                      className="text-[#5a5040] hover:text-[#ff6b6b] transition-colors p-1"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between items-center">

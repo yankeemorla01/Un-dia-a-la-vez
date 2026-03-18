@@ -39,72 +39,73 @@ export default async function handler(req, res) {
     }
     const competition = compRows[0];
 
-    // Get all members with their marked days count within the competition date range
-    // If competition has a goal_id, only count days for that goal
+    // day_key uses 0-indexed months (JS getMonth()), e.g. March 17 = "2026-2-17"
+    function dayKeyToDate(key) {
+      const [y, m, d] = key.split('-').map(Number);
+      return new Date(y, m, d); // m is already 0-indexed
+    }
+    const rangeStart = new Date(competition.start_date + 'T00:00:00');
+    const rangeEnd = competition.end_date ? new Date(competition.end_date + 'T00:00:00') : new Date();
+
     const goalFilter = competition.goal_id
-      ? 'AND md.goal_id = $4'
-      : 'AND md.goal_id IS NULL';
-    const queryParams = [competitionId, competition.start_date, competition.end_date || null];
-    if (competition.goal_id) queryParams.push(competition.goal_id);
-
-    const { rows: members } = await pool.query(
-      `SELECT cm.user_id, cm.display_name, cm.photo_url, cm.joined_at,
-              COUNT(md.day_key) as days_completed
-       FROM udv_competition_members cm
-       LEFT JOIN udv_user_marked_days md
-         ON md.user_id = cm.user_id
-         AND md.marked = true
-         AND md.day_key >= $2
-         AND ($3::varchar IS NULL OR md.day_key <= $3)
-         ${goalFilter}
-       WHERE cm.competition_id = $1
-       GROUP BY cm.user_id, cm.display_name, cm.photo_url, cm.joined_at
-       ORDER BY days_completed DESC, cm.joined_at ASC`,
-      queryParams
-    );
-
-    // Calculate total possible days
-    const startDate = new Date(competition.start_date);
-    const endDate = competition.end_date ? new Date(competition.end_date) : new Date();
-    const totalDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
-
-    // Calculate streaks per member
-    const goalStreakFilter = competition.goal_id
       ? 'AND goal_id = $2'
       : 'AND goal_id IS NULL';
-    const streaks = {};
+
+    // Get members
+    const { rows: members } = await pool.query(
+      `SELECT user_id, display_name, photo_url, joined_at
+       FROM udv_competition_members WHERE competition_id = $1`,
+      [competitionId]
+    );
+
+    // Calculate days_completed + streak in a single loop per member
     for (const m of members) {
-      const sp = competition.goal_id ? [m.user_id, competition.goal_id] : [m.user_id];
+      const qp = competition.goal_id ? [m.user_id, competition.goal_id] : [m.user_id];
       const { rows: dayRows } = await pool.query(
         `SELECT day_key FROM udv_user_marked_days
-         WHERE user_id = $1 AND marked = true ${goalStreakFilter}
-         ORDER BY day_key DESC`,
-        sp
+         WHERE user_id = $1 AND marked = true ${goalFilter}`,
+        qp
       );
       const daySet = new Set(dayRows.map(r => r.day_key));
+
+      // Count days in competition range
+      let count = 0;
+      for (const row of dayRows) {
+        const d = dayKeyToDate(row.day_key);
+        if (d >= rangeStart && d <= rangeEnd) count++;
+      }
+      m.days_completed = count;
+
+      // Calculate streak
       let streak = 0;
       const d = new Date();
       let key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       if (!daySet.has(key)) {
         d.setDate(d.getDate() - 1);
         key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-        if (!daySet.has(key)) { streaks[m.user_id] = 0; continue; }
+        if (!daySet.has(key)) { m.streak = 0; continue; }
       }
       while (daySet.has(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`)) {
         streak++;
         d.setDate(d.getDate() - 1);
       }
-      streaks[m.user_id] = streak;
+      m.streak = streak;
     }
+
+    // Sort by days_completed DESC, then by join date ASC
+    members.sort((a, b) => b.days_completed - a.days_completed || new Date(a.joined_at) - new Date(b.joined_at));
+
+    // Calculate total possible days
+    const totalDays = Math.max(1, Math.ceil((rangeEnd - rangeStart) / (1000 * 60 * 60 * 24)) + 1);
 
     const leaderboard = members.map((m, idx) => ({
       position: idx + 1,
       user_id: m.user_id,
       display_name: m.display_name,
       photo_url: m.photo_url,
-      days_completed: parseInt(m.days_completed),
+      days_completed: m.days_completed,
       total_days: totalDays,
-      streak: streaks[m.user_id] || 0,
+      streak: m.streak || 0,
       is_me: m.user_id === userId,
     }));
 
@@ -114,6 +115,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 }

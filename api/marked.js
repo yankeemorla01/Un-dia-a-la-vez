@@ -38,11 +38,19 @@ export default async function handler(req, res) {
       if (userId) {
         const goalId = goal_id || null;
         if (marked) {
-          await pool.query(
-            `INSERT INTO udv_user_marked_days (user_id, day_key, goal_id, marked) VALUES ($1, $2, $3, true)
-             ON CONFLICT ON CONSTRAINT udv_user_marked_days_unique DO UPDATE SET marked = true`,
-            [userId, day_key, goalId]
-          );
+          if (goalId) {
+            await pool.query(
+              `INSERT INTO udv_user_marked_days (user_id, day_key, goal_id, marked) VALUES ($1, $2, $3, true)
+               ON CONFLICT ON CONSTRAINT udv_user_marked_days_unique DO UPDATE SET marked = true`,
+              [userId, day_key, goalId]
+            );
+          } else {
+            await pool.query(
+              `INSERT INTO udv_user_marked_days (user_id, day_key, goal_id, marked) VALUES ($1, $2, NULL, true)
+               ON CONFLICT (user_id, day_key) WHERE goal_id IS NULL DO UPDATE SET marked = true`,
+              [userId, day_key]
+            );
+          }
         } else {
           if (goalId) {
             await pool.query('DELETE FROM udv_user_marked_days WHERE user_id = $1 AND day_key = $2 AND goal_id = $3', [userId, day_key, goalId]);
@@ -68,6 +76,6 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 }

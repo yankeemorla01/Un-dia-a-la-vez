@@ -52,6 +52,6 @@ export default async function handler(req, res) {
     return res.json({ ok: true, competition_id: competition.id, competition_name: competition.name });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 }

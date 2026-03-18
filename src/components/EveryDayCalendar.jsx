@@ -26,11 +26,20 @@ const REWARDS = [
   { streak: 365, emoji: "👑", label: "¡Un año entero!" },
 ];
 
+// Reuse a single AudioContext to avoid leak
+let _audioCtx = null;
+function getAudioCtx() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AC();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
 const playChime = () => {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     osc.connect(gainNode);
@@ -43,16 +52,13 @@ const playChime = () => {
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
-  } catch (e) {
-    console.warn("Audio no soportado o bloqueado", e);
-  }
+  } catch (e) {}
 };
 
 const playUnmarkSound = () => {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     osc.connect(gainNode);
@@ -65,9 +71,7 @@ const playUnmarkSound = () => {
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.3);
-  } catch (e) {
-    console.warn("Audio no soportado o bloqueado", e);
-  }
+  } catch (e) {}
 };
 
 function Particle({ x, y, emoji, id, onDone }) {
@@ -195,8 +199,12 @@ export default function EveryDayCalendar({ goalId = null }) {
     if (navigator.share) {
       try { await navigator.share({ title: 'Mi Progreso', text }); } catch {}
     } else {
-      navigator.clipboard.writeText(text);
-      setToast({ emoji: '📋', label: '¡Copiado al portapapeles!', streak: 0 });
+      try {
+        await navigator.clipboard.writeText(text);
+        setToast({ emoji: '📋', label: '¡Copiado al portapapeles!', streak: 0 });
+      } catch {
+        setToast({ emoji: '📋', label: 'No se pudo copiar', streak: 0 });
+      }
       setTimeout(() => setToast(null), 2500);
     }
   };

@@ -8,13 +8,17 @@ export function getPool() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL || process.env.MONGODB_URI,
-      ssl: false,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 2,
+      idleTimeoutMillis: 10000,
     });
   }
   return pool;
 }
 
+let initialized = false;
 export async function initDB() {
+  if (initialized) return;
   const p = getPool();
   await p.query(`
     CREATE TABLE IF NOT EXISTS udv_settings (
@@ -85,6 +89,10 @@ export async function initDB() {
       END IF;
     END $$;
 
+    -- Create unique index for NULL goal_id rows (UNIQUE constraint doesn't enforce NULL uniqueness)
+    CREATE UNIQUE INDEX IF NOT EXISTS udv_marked_days_null_goal_idx
+      ON udv_user_marked_days (user_id, day_key) WHERE goal_id IS NULL;
+
     -- Competitions (competencias)
     CREATE TABLE IF NOT EXISTS udv_competitions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -118,6 +126,7 @@ export async function initDB() {
     EXCEPTION WHEN duplicate_column THEN NULL;
     END $$;
   `);
+  initialized = true;
 }
 
 export async function bumpVersion(userId) {

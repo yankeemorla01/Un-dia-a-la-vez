@@ -7,13 +7,18 @@ body {
 
 /* Light mode via CSS filter - inverts dark theme to light */
 html.udv-light {
+  filter: invert(0.92) hue-rotate(180deg) saturate(1.2);
+}
+
+/* Preserve images in light mode */
+html.udv-light img,
+html.udv-light video,
+html.udv-light svg:not([class*="lucide"]) {
   filter: invert(1) hue-rotate(180deg);
 }
 
-/* Preserve images and emojis in light mode */
-html.udv-light img,
-html.udv-light video,
-html.udv-light svg:not([class*="lucide"]),
-html.udv-light .emoji {
-  filter: invert(1) hue-rotate(180deg);
+/* Prevent double-inversion on canvas/emoji by isolating them */
+html.udv-light .aspect-square,
+html.udv-light [style*="fontSize"] {
+  isolation: isolate;
 }

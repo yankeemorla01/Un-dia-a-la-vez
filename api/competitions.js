@@ -26,6 +26,7 @@ export default async function handler(req, res) {
         `SELECT c.id, c.name, c.invite_code, c.goal_id, c.start_date, c.end_date, c.created_by, c.created_at,
                 cm.display_name as my_display_name,
                 g.name as goal_name, g.emoji as goal_emoji,
+                (c.created_by = $1) as is_creator,
                 (SELECT COUNT(*) FROM udv_competition_members WHERE competition_id = c.id) as member_count
          FROM udv_competitions c
          JOIN udv_competition_members cm ON cm.competition_id = c.id AND cm.user_id = $1
@@ -90,6 +91,6 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 }
