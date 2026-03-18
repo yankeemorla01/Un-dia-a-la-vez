@@ -8,7 +8,7 @@ export function getPool() {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL || process.env.MONGODB_URI,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: false,
       max: 2,
       idleTimeoutMillis: 10000,
     });
