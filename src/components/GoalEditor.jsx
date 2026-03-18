@@ -16,7 +16,10 @@ export default function GoalEditor({ goal, onSave, onClose }) {
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
       style={{ background: 'rgba(0,0,0,0.7)', animation: 'modal-bg-in 0.2s ease' }}
+      role="button"
+      tabIndex={0}
       onClick={onClose}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
     >
       <div
         className="w-full max-w-sm rounded-2xl p-6 relative"
@@ -26,7 +29,10 @@ export default function GoalEditor({ goal, onSave, onClose }) {
           boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
           animation: 'modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
         }}
+        role="button"
+        tabIndex={0}
         onClick={e => e.stopPropagation()}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); } }}
       >
         <button
           onClick={onClose}
@@ -40,25 +46,25 @@ export default function GoalEditor({ goal, onSave, onClose }) {
         </h2>
 
         <div className="mb-4">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-[#6a5a40] font-sans mb-2 block">
+          <label htmlFor="goal-name" className="text-[10px] uppercase tracking-[0.2em] text-[#6a5a40] font-sans mb-2 block">
             Nombre
           </label>
           <input
+            id="goal-name"
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
             placeholder="Ej: Estudio personal"
-            autoFocus
             className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-3 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] transition-colors"
             style={{ caretColor: '#d4af37' }}
           />
         </div>
 
         <div className="mb-6">
-          <label className="text-[10px] uppercase tracking-[0.2em] text-[#6a5a40] font-sans mb-2 block">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-[#6a5a40] font-sans mb-2 block">
             Emoji
-          </label>
+          </span>
           <div className="flex flex-wrap gap-2">
             {EMOJI_OPTIONS.map(e => (
               <button

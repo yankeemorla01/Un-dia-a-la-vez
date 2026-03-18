@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer } from "react";
 import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut, Share2 } from "lucide-react";
 import { useMsal } from '@azure/msal-react';
 import { useAuthFetch } from '../useAuthFetch';
@@ -98,15 +98,69 @@ function Particle({ x, y, emoji, id, onDone }) {
 
 const API = "/api";
 
+// --- Reducer for data-loading state ---
+const calendarInitialState = {
+  marked: {},
+  goal: "Mi Meta Diaria",
+  viewMode: "month",
+  loading: true,
+};
+
+function calendarReducer(state, action) {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true };
+    case "LOAD_SUCCESS":
+      return {
+        ...state,
+        marked: action.marked,
+        goal: action.goal !== undefined ? action.goal : state.goal,
+        viewMode: action.viewMode !== undefined ? action.viewMode : state.viewMode,
+        loading: false,
+      };
+    case "SYNC_UPDATE":
+      return {
+        ...state,
+        marked: action.marked,
+        goal: action.goal !== undefined ? action.goal : state.goal,
+        viewMode: action.viewMode !== undefined ? action.viewMode : state.viewMode,
+      };
+    case "SET_MARKED":
+      return { ...state, marked: action.marked };
+    case "SET_GOAL":
+      return { ...state, goal: action.goal };
+    case "SET_VIEW_MODE":
+      return { ...state, viewMode: action.viewMode };
+    default:
+      return state;
+  }
+}
+
+// --- MonthGrid component (extracted to avoid inline render function warning) ---
+function MonthGrid({ year, monthIndex, renderDayCell }) {
+  const daysInMonth = getDaysInMonth(monthIndex, year);
+  const firstDay = getFirstDayOfMonth(monthIndex, year);
+
+  return (
+    <div className="grid grid-cols-7 gap-1 md:gap-1.5">
+      {Array.from({ length: firstDay }).map((_, i) => (
+        <div key={`empty-${i}`} className="aspect-square" />
+      ))}
+      {Array.from({ length: daysInMonth }).map((_, i) => {
+        return renderDayCell(new Date(year, monthIndex, i + 1));
+      })}
+    </div>
+  );
+}
+
 export default function EveryDayCalendar({ goalId = null }) {
-  const [marked, setMarked] = useState({});
-  const [goal, setGoal] = useState("Mi Meta Diaria");
+  const [state, dispatch] = useReducer(calendarReducer, calendarInitialState);
+  const { marked, goal, viewMode, loading } = state;
+
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [activeDate, setActiveDate] = useState(today);
-  const [viewMode, setViewMode] = useState("month");
   const [particles, setParticles] = useState([]);
   const [toast, setToast] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const { instance, accounts } = useMsal();
   const authFetch = useAuthFetch();
@@ -120,18 +174,22 @@ export default function EveryDayCalendar({ goalId = null }) {
 
   // Cargar datos de la base de datos al iniciar
   useEffect(() => {
-    setLoading(true);
+    dispatch({ type: "LOAD_START" });
     authFetch(`${API}/sync?v=0${goalParam}`).then(r => r.json()).then(data => {
       if (data.changed) {
-        setMarked(data.marked);
-        if (data.settings.goal) setGoal(data.settings.goal);
-        if (data.settings.view_mode) setViewMode(data.settings.view_mode);
+        dispatch({
+          type: "LOAD_SUCCESS",
+          marked: data.marked,
+          goal: data.settings.goal || undefined,
+          viewMode: data.settings.view_mode || undefined,
+        });
         versionRef.current = data.version;
+      } else {
+        dispatch({ type: "LOAD_SUCCESS", marked: {}, goal: undefined, viewMode: undefined });
       }
-      setLoading(false);
     }).catch(err => {
       console.error("Error cargando datos:", err);
-      setLoading(false);
+      dispatch({ type: "LOAD_SUCCESS", marked: {}, goal: undefined, viewMode: undefined });
     });
   }, [authFetch, goalParam]);
 
@@ -142,9 +200,12 @@ export default function EveryDayCalendar({ goalId = null }) {
         .then(r => r.json())
         .then(data => {
           if (data.changed) {
-            setMarked(data.marked);
-            if (data.settings?.goal) setGoal(data.settings.goal);
-            if (data.settings?.view_mode) setViewMode(data.settings.view_mode);
+            dispatch({
+              type: "SYNC_UPDATE",
+              marked: data.marked,
+              goal: data.settings?.goal || undefined,
+              viewMode: data.settings?.view_mode || undefined,
+            });
             versionRef.current = data.version;
           }
         })
@@ -185,7 +246,7 @@ export default function EveryDayCalendar({ goalId = null }) {
       const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       const dayNames = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
-      days.push({ label: dayNames[d.getDay()], done: !!marked[key], isToday: i === 0 });
+      days.push({ label: dayNames[d.getDay()], done: !!marked[key], isToday: i === 0, dateKey: key });
     }
     return days;
   }, [marked]);
@@ -211,7 +272,7 @@ export default function EveryDayCalendar({ goalId = null }) {
 
   // Guardar meta en la base de datos
   const saveGoal = (newGoal) => {
-    setGoal(newGoal);
+    dispatch({ type: "SET_GOAL", goal: newGoal });
     authFetch(`${API}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -221,7 +282,7 @@ export default function EveryDayCalendar({ goalId = null }) {
 
   // Guardar vista en la base de datos
   const saveViewMode = (mode) => {
-    setViewMode(mode);
+    dispatch({ type: "SET_VIEW_MODE", viewMode: mode });
     authFetch(`${API}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -235,49 +296,48 @@ export default function EveryDayCalendar({ goalId = null }) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
 
-    setMarked(prev => {
-      const willMark = !prev[key];
-      const next = { ...prev, [key]: willMark };
-      if (!willMark) delete next[key];
+    const willMark = !marked[key];
+    const next = { ...marked, [key]: willMark };
+    if (!willMark) delete next[key];
 
-      // Guardar en la base de datos
-      authFetch(`${API}/marked`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day_key: key, marked: willMark, goal_id: goalId || undefined }),
-      }).catch(err => console.error("Error guardando día:", err));
+    dispatch({ type: "SET_MARKED", marked: next });
 
-      if (willMark) {
-        playChime();
-        const emojis = ["✨", "⭐", "🌟", "💫", "✦", "🔥"];
-        setParticles(p => [...p, ...Array.from({ length: 6 }, (_, i) => ({
-          id: Date.now() + i,
-          x: cx,
-          y: cy,
-          emoji: emojis[i % emojis.length]
-        }))]);
+    // Guardar en la base de datos
+    authFetch(`${API}/marked`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day_key: key, marked: willMark, goal_id: goalId || undefined }),
+    }).catch(err => console.error("Error guardando día:", err));
 
-        const ns = computeStreak(next);
-        const match = REWARDS.find(r => r.streak === ns);
-        if (match) {
-          setToast({ ...match, streak: ns });
-          // Launch confetti
-          const pieces = Array.from({ length: 40 }, (_, i) => ({
-            id: Date.now() + i + 100,
-            x: Math.random() * 100,
-            delay: Math.random() * 0.5,
-            color: ['#d4af37', '#f0d060', '#ff8c20', '#e0c050', '#8a6a10'][i % 5],
-            size: 4 + Math.random() * 6,
-            drift: -50 + Math.random() * 100,
-          }));
-          setConfetti(pieces);
-          setTimeout(() => { setToast(null); setConfetti([]); }, 3500);
-        }
-      } else {
-        playUnmarkSound();
+    if (willMark) {
+      playChime();
+      const emojis = ["✨", "⭐", "🌟", "💫", "✦", "🔥"];
+      setParticles(p => [...p, ...Array.from({ length: 6 }, (_, i) => ({
+        id: Date.now() + i,
+        x: cx,
+        y: cy,
+        emoji: emojis[i % emojis.length]
+      }))]);
+
+      const ns = computeStreak(next);
+      const match = REWARDS.find(r => r.streak === ns);
+      if (match) {
+        setToast({ ...match, streak: ns });
+        // Launch confetti
+        const pieces = Array.from({ length: 40 }, (_, i) => ({
+          id: Date.now() + i + 100,
+          x: Math.random() * 100,
+          delay: Math.random() * 0.5,
+          color: ['#d4af37', '#f0d060', '#ff8c20', '#e0c050', '#8a6a10'][i % 5],
+          size: 4 + Math.random() * 6,
+          drift: -50 + Math.random() * 100,
+        }));
+        setConfetti(pieces);
+        setTimeout(() => { setToast(null); setConfetti([]); }, 3500);
       }
-      return next;
-    });
+    } else {
+      playUnmarkSound();
+    }
   };
 
   const removeParticle = useCallback((id) => setParticles(p => p.filter(x => x.id !== id)), []);
@@ -326,6 +386,9 @@ export default function EveryDayCalendar({ goalId = null }) {
       <div
         key={key}
         onClick={(e) => handleClickDay(dateObj, e)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClickDay(dateObj, e); }}
+        role="button"
+        tabIndex={0}
         className="aspect-square rounded-lg flex items-center justify-center relative day-cell"
         style={{
           background: isMarked ? "#c8a430" : isToday ? "rgba(212,175,55,0.15)" : "#181610",
@@ -338,22 +401,6 @@ export default function EveryDayCalendar({ goalId = null }) {
         <span className={`text-[11px] md:text-xs font-sans ${isMarked ? "text-[#3a2800] font-bold" : isToday ? "text-[#ff8c20] font-bold" : "text-[#5a5040]"}`}>
           {day}
         </span>
-      </div>
-    );
-  };
-
-  const renderMonthGrid = (year, monthIndex) => {
-    const daysInMonth = getDaysInMonth(monthIndex, year);
-    const firstDay = getFirstDayOfMonth(monthIndex, year);
-
-    return (
-      <div className="grid grid-cols-7 gap-1 md:gap-1.5">
-        {Array.from({ length: firstDay }).map((_, i) => (
-          <div key={`empty-${i}`} className="aspect-square" />
-        ))}
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          return renderDayCell(new Date(year, monthIndex, i + 1));
-        })}
       </div>
     );
   };
@@ -426,10 +473,9 @@ export default function EveryDayCalendar({ goalId = null }) {
           <div className="relative flex justify-center items-center group">
             {isEditingGoal ? (
               <input
-                autoFocus
                 type="text"
                 value={goal}
-                onChange={(e) => setGoal(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_GOAL", goal: e.target.value })}
                 onBlur={() => { setIsEditingGoal(false); saveGoal(goal); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { setIsEditingGoal(false); saveGoal(goal); } }}
                 className="bg-transparent text-center text-[#d4af37] text-2xl md:text-3xl font-normal outline-none border-b border-[#d4af37] pb-1 w-full"
@@ -438,6 +484,9 @@ export default function EveryDayCalendar({ goalId = null }) {
             ) : (
               <h1
                 onClick={() => setIsEditingGoal(true)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsEditingGoal(true); }}
+                role="button"
+                tabIndex={0}
                 className="text-2xl md:text-3xl font-normal text-[#d4af37] tracking-wide m-0 cursor-pointer flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 {goal || "Escribe tu meta..."}
@@ -451,6 +500,9 @@ export default function EveryDayCalendar({ goalId = null }) {
 
           <div
             onClick={() => setActiveDate(today)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveDate(today); }}
+            role="button"
+            tabIndex={0}
             className="mt-4 inline-block bg-[#1a1812] px-5 py-2 rounded-full border border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.15)] cursor-pointer hover:bg-[#25221a] transition-colors"
           >
             <span className="text-sm md:text-base font-sans tracking-wide text-[#ff8c20] font-bold">
@@ -502,8 +554,8 @@ export default function EveryDayCalendar({ goalId = null }) {
             </button>
           </div>
           <div className="flex gap-1.5 justify-between">
-            {weekData.map((d, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+            {weekData.map((d) => (
+              <div key={d.dateKey} className="flex-1 flex flex-col items-center gap-1.5">
                 <div
                   className="w-full rounded-lg transition-all duration-500"
                   style={{
@@ -568,10 +620,10 @@ export default function EveryDayCalendar({ goalId = null }) {
                   </h3>
                   <div className="grid grid-cols-7 gap-1 mb-2">
                     {WEEK_DAYS.map((day, i) => (
-                      <div key={i} className="text-center text-[9px] md:text-[10px] font-sans tracking-widest text-[#5a5040]">{day}</div>
+                      <div key={`year-weekday-${mIndex}-${i}`} className="text-center text-[9px] md:text-[10px] font-sans tracking-widest text-[#5a5040]">{day}</div>
                     ))}
                   </div>
-                  {renderMonthGrid(activeDate.getFullYear(), mIndex)}
+                  <MonthGrid year={activeDate.getFullYear()} monthIndex={mIndex} renderDayCell={renderDayCell} />
                 </div>
               ))}
             </div>
@@ -581,11 +633,11 @@ export default function EveryDayCalendar({ goalId = null }) {
           {viewMode === "month" && (
             <div className="w-full max-w-md bg-[#11100c] rounded-2xl p-4 md:p-6 border border-[#252318] shadow-2xl">
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {WEEK_DAYS.map((day, i) => (
-                  <div key={i} className="text-center text-[10px] md:text-[12px] font-sans tracking-widest text-[#5a5040]">{day}</div>
+                {WEEK_DAYS.map((day) => (
+                  <div key={`month-${day}`} className="text-center text-[10px] md:text-[12px] font-sans tracking-widest text-[#5a5040]">{day}</div>
                 ))}
               </div>
-              {renderMonthGrid(activeDate.getFullYear(), activeDate.getMonth())}
+              <MonthGrid year={activeDate.getFullYear()} monthIndex={activeDate.getMonth()} renderDayCell={renderDayCell} />
             </div>
           )}
 
@@ -593,8 +645,8 @@ export default function EveryDayCalendar({ goalId = null }) {
           {viewMode === "week" && (
             <div className="w-full max-w-md bg-[#11100c] rounded-2xl p-4 md:p-6 border border-[#252318] shadow-2xl">
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {WEEK_DAYS.map((day, i) => (
-                  <div key={i} className="text-center text-[10px] md:text-[12px] font-sans tracking-widest text-[#5a5040]">{day}</div>
+                {WEEK_DAYS.map((day) => (
+                  <div key={`week-${day}`} className="text-center text-[10px] md:text-[12px] font-sans tracking-widest text-[#5a5040]">{day}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1 md:gap-1.5">

@@ -207,6 +207,9 @@ function VersePopup({ book, chapter, verse, onClose }) {
     <div
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
       style={{ animation: "verse-fade-in 0.2s ease-out" }}
     >
       <style>{`
@@ -222,6 +225,9 @@ function VersePopup({ book, chapter, verse, onClose }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
       <div
         className="relative mx-4 mb-4 sm:mb-0 w-full sm:max-w-md rounded-2xl overflow-hidden"
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); } }}
         style={{
           background: "#131109",
           border: "1px solid rgba(212,175,55,0.25)",
@@ -474,11 +480,20 @@ export default function DailyReading() {
   }
 
   return (
-    <div className="fixed inset-0 z-[55] flex items-end sm:items-center justify-center" onClick={() => setIsOpen(false)}>
+    <div
+      className="fixed inset-0 z-[55] flex items-end sm:items-center justify-center"
+      onClick={() => setIsOpen(false)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setIsOpen(false); } }}
+    >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       <div
         className="relative w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); } }}
         style={{
           background: "#0d0c0a",
           border: "1px solid #252318",

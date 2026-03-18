@@ -1,7 +1,258 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { Plus, LogIn, Trophy, Users, Copy, Check, Trash2 } from 'lucide-react';
 
 const API = '/api';
+
+// --- Create form reducer ---
+const createInitial = { name: '', displayName: '', goalId: 'none', error: '', creating: false };
+function createReducer(state, action) {
+  switch (action.type) {
+    case 'SET_NAME':         return { ...state, name: action.value };
+    case 'SET_DISPLAY_NAME': return { ...state, displayName: action.value };
+    case 'SET_GOAL_ID':      return { ...state, goalId: action.value };
+    case 'SET_ERROR':        return { ...state, error: action.value };
+    case 'SET_CREATING':     return { ...state, creating: action.value };
+    case 'INIT_DISPLAY':     return { ...state, displayName: state.displayName || action.value };
+    case 'RESET':            return { ...createInitial, displayName: action.userName || '' };
+    default:                 return state;
+  }
+}
+
+// --- Join form reducer ---
+const joinInitial = { code: '', displayName: '', error: '' };
+function joinReducer(state, action) {
+  switch (action.type) {
+    case 'SET_CODE':         return { ...state, code: action.value };
+    case 'SET_DISPLAY_NAME': return { ...state, displayName: action.value };
+    case 'SET_ERROR':        return { ...state, error: action.value };
+    case 'INIT_DISPLAY':     return { ...state, displayName: state.displayName || action.value };
+    case 'RESET':            return { ...joinInitial, displayName: action.userName || '' };
+    default:                 return state;
+  }
+}
+
+// --- Sub-components ---
+
+function CreateCompetitionForm({ form, dispatch, goals, onCancel, onSubmit }) {
+  return (
+    <div className="mb-6 p-4 rounded-2xl" style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.3s ease both' }}>
+      <h3 className="text-sm text-[#d4af37] mb-3 font-semibold">Nueva Competencia</h3>
+      <input
+        type="text"
+        placeholder="Nombre de la competencia"
+        value={form.name}
+        onChange={e => dispatch({ type: 'SET_NAME', value: e.target.value })}
+        className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
+        style={{ caretColor: '#d4af37' }}
+      />
+      <input
+        type="text"
+        placeholder="Tu nombre para mostrar"
+        value={form.displayName}
+        onChange={e => dispatch({ type: 'SET_DISPLAY_NAME', value: e.target.value })}
+        className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
+        style={{ caretColor: '#d4af37' }}
+      />
+
+      {/* Goal selector */}
+      <span className="text-[10px] uppercase tracking-[0.15em] text-[#6a5a40] font-sans mb-1.5 block">
+        Meta a competir
+      </span>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <button
+          onClick={() => dispatch({ type: 'SET_GOAL_ID', value: 'none' })}
+          className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
+          style={{
+            background: form.goalId === 'none' ? '#d4af37' : '#1a1812',
+            color: form.goalId === 'none' ? '#131109' : '#6a5a40',
+            border: `1px solid ${form.goalId === 'none' ? '#d4af37' : '#252318'}`,
+          }}
+        >
+          📖 Principal
+        </button>
+        {goals.map(g => (
+          <button
+            key={g.id}
+            onClick={() => dispatch({ type: 'SET_GOAL_ID', value: g.id })}
+            className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
+            style={{
+              background: form.goalId === g.id ? '#d4af37' : '#1a1812',
+              color: form.goalId === g.id ? '#131109' : '#6a5a40',
+              border: `1px solid ${form.goalId === g.id ? '#d4af37' : '#252318'}`,
+            }}
+          >
+            {g.emoji} {g.name}
+          </button>
+        ))}
+      </div>
+
+      {form.error && (
+        <div className="text-[#ff6b6b] text-xs font-sans mb-3 text-center">{form.error}</div>
+      )}
+      <div className="flex gap-2">
+        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
+          Cancelar
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={!form.name.trim() || !form.displayName.trim() || form.creating}
+          className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold transition-all"
+          style={{
+            background: form.name.trim() && form.displayName.trim() && !form.creating ? '#d4af37' : '#252318',
+            color: form.name.trim() && form.displayName.trim() && !form.creating ? '#131109' : '#5a5040',
+          }}
+        >
+          {form.creating ? 'Creando...' : 'Crear'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function JoinCompetitionForm({ form, dispatch, onCancel, onSubmit }) {
+  return (
+    <div className="mb-6 p-4 rounded-2xl" style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.3s ease both' }}>
+      <h3 className="text-sm text-[#d4af37] mb-3 font-semibold">Unirse a Competencia</h3>
+      <input
+        type="text"
+        placeholder="Codigo de invitacion"
+        value={form.code}
+        onChange={e => dispatch({ type: 'SET_CODE', value: e.target.value.toUpperCase() })}
+        maxLength={6}
+        className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3 tracking-[0.3em] text-center uppercase"
+        style={{ caretColor: '#d4af37', letterSpacing: '0.3em' }}
+      />
+      <input
+        type="text"
+        placeholder="Tu nombre para mostrar"
+        value={form.displayName}
+        onChange={e => dispatch({ type: 'SET_DISPLAY_NAME', value: e.target.value })}
+        className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
+        style={{ caretColor: '#d4af37' }}
+      />
+      {form.error && (
+        <div className="text-[#ff6b6b] text-xs font-sans mb-3 text-center">{form.error}</div>
+      )}
+      <div className="flex gap-2">
+        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
+          Cancelar
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={!form.code.trim() || !form.displayName.trim()}
+          className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold transition-all"
+          style={{
+            background: form.code.trim() && form.displayName.trim() ? '#d4af37' : '#252318',
+            color: form.code.trim() && form.displayName.trim() ? '#131109' : '#5a5040',
+          }}
+        >
+          Unirse
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CompetitionCard({ comp, idx, copiedId, onSelect, onCopyCode, onDeleteRequest }) {
+  return (
+    <div
+      key={comp.id}
+      role="button"
+      tabIndex={0}
+      className="p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] relative"
+      style={{
+        background: '#131109',
+        border: '1px solid #3a3420',
+        animation: `fadeSlide 0.3s ease ${idx * 0.05}s both`,
+      }}
+      onClick={() => onSelect(comp.id)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(comp.id); }}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <h3 className="text-sm text-[#d4af37] font-semibold">{comp.name}</h3>
+          {(comp.goal_name || comp.goal_emoji) && (
+            <span className="text-[10px] text-[#8a7a50] font-sans">
+              {comp.goal_emoji} {comp.goal_name}
+            </span>
+          )}
+          {!comp.goal_id && (
+            <span className="text-[10px] text-[#5a5040] font-sans">📖 Principal</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-[#6a5a40]">
+            <Users size={12} />
+            <span className="text-[10px] font-sans">{comp.member_count}</span>
+          </div>
+          {comp.is_creator && (
+            <button
+              onClick={e => { e.stopPropagation(); onDeleteRequest(comp.id); }}
+              className="text-[#5a5040] hover:text-[#ff6b6b] transition-colors p-1"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-[10px] text-[#5a5040] font-sans">
+          Desde {comp.start_date}
+        </span>
+        <button
+          onClick={e => { e.stopPropagation(); onCopyCode(comp.invite_code, comp.id); }}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-sans font-bold transition-all"
+          style={{ background: '#1a1812', border: '1px solid #252318', color: '#8a7a50' }}
+        >
+          {copiedId === comp.id ? <Check size={10} /> : <Copy size={10} />}
+          {comp.invite_code}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DeleteConfirmationModal({ onCancel, onConfirm }) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+      style={{ background: 'rgba(0,0,0,0.7)' }}
+      onClick={onCancel}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onCancel(); }}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        className="w-full max-w-xs rounded-2xl p-5 text-center"
+        style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.2s ease both' }}
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => { e.stopPropagation(); }}
+      >
+        <Trash2 size={32} className="mx-auto mb-3" style={{ color: '#ff6b6b' }} />
+        <p className="text-sm text-[#e0d8c8] font-sans mb-4">Eliminar esta competencia?</p>
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-white"
+            style={{ background: '#dc2626' }}
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Main component ---
 
 export default function CompetitionList({ authFetch, onSelectCompetition, userName, photoUrl, goals }) {
   const [competitions, setCompetitions] = useState([]);
@@ -11,25 +262,8 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
   const [copiedId, setCopiedId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // Create form
-  const [createName, setCreateName] = useState('');
-  const [createDisplayName, setCreateDisplayName] = useState(userName || '');
-  const [createGoalId, setCreateGoalId] = useState('none');
-  const [createError, setCreateError] = useState('');
-  const [creating, setCreating] = useState(false);
-
-  // Join form
-  const [joinCode, setJoinCode] = useState('');
-  const [joinDisplayName, setJoinDisplayName] = useState(userName || '');
-  const [joinError, setJoinError] = useState('');
-
-  // Sync display names when userName loads from MSAL
-  useEffect(() => {
-    if (userName) {
-      setCreateDisplayName(prev => prev || userName);
-      setJoinDisplayName(prev => prev || userName);
-    }
-  }, [userName]);
+  const [createForm, createDispatch] = useReducer(createReducer, createInitial);
+  const [joinForm, joinDispatch] = useReducer(joinReducer, joinInitial);
 
   const loadCompetitions = () => {
     authFetch(`${API}/competitions`)
@@ -44,17 +278,17 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
   useEffect(() => { loadCompetitions(); }, [authFetch]);
 
   const handleCreate = () => {
-    if (!createName.trim() || !createDisplayName.trim()) return;
-    setCreating(true);
-    setCreateError('');
+    if (!createForm.name.trim() || !createForm.displayName.trim()) return;
+    createDispatch({ type: 'SET_CREATING', value: true });
+    createDispatch({ type: 'SET_ERROR', value: '' });
     authFetch(`${API}/competitions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: createName.trim(),
-        display_name: createDisplayName.trim(),
+        name: createForm.name.trim(),
+        display_name: createForm.displayName.trim(),
         photo_url: photoUrl || null,
-        goal_id: createGoalId === 'none' ? null : createGoalId,
+        goal_id: createForm.goalId === 'none' ? null : createForm.goalId,
       }),
     })
       .then(r => r.json().then(data => {
@@ -63,42 +297,38 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
       }))
       .then(() => {
         setShowCreate(false);
-        setCreateName('');
-        setCreateDisplayName(userName || '');
-        setCreateGoalId('none');
-        setCreateError('');
+        createDispatch({ type: 'RESET', userName });
         loadCompetitions();
       })
       .catch(err => {
-        setCreateError(err.message || 'Error al crear competencia');
+        createDispatch({ type: 'SET_ERROR', value: err.message || 'Error al crear competencia' });
       })
-      .finally(() => setCreating(false));
+      .finally(() => createDispatch({ type: 'SET_CREATING', value: false }));
   };
 
   const handleJoin = () => {
-    if (!joinCode.trim() || !joinDisplayName.trim()) return;
-    setJoinError('');
+    if (!joinForm.code.trim() || !joinForm.displayName.trim()) return;
+    joinDispatch({ type: 'SET_ERROR', value: '' });
     authFetch(`${API}/competition-join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        invite_code: joinCode.trim(),
-        display_name: joinDisplayName.trim(),
+        invite_code: joinForm.code.trim(),
+        display_name: joinForm.displayName.trim(),
         photo_url: photoUrl || null,
       }),
     })
       .then(r => r.json())
       .then(data => {
         if (data.error) {
-          setJoinError(data.error);
+          joinDispatch({ type: 'SET_ERROR', value: data.error });
         } else {
           setShowJoin(false);
-          setJoinCode('');
-          setJoinDisplayName(userName || '');
+          joinDispatch({ type: 'RESET', userName });
           loadCompetitions();
         }
       })
-      .catch(() => setJoinError('Error de conexión'));
+      .catch(() => joinDispatch({ type: 'SET_ERROR', value: 'Error de conexión' }));
   };
 
   const handleDelete = (id) => {
@@ -141,14 +371,22 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
       {/* Action buttons */}
       <div className="flex gap-3 mb-6">
         <button
-          onClick={() => { setShowCreate(true); setShowJoin(false); }}
+          onClick={() => {
+            setShowCreate(true);
+            setShowJoin(false);
+            createDispatch({ type: 'INIT_DISPLAY', value: userName });
+          }}
           className="flex-1 py-3 rounded-xl text-xs font-sans font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
           style={{ background: '#1a1812', border: '1px solid #3a3420', color: '#d4af37' }}
         >
           <Plus size={16} /> Crear
         </button>
         <button
-          onClick={() => { setShowJoin(true); setShowCreate(false); }}
+          onClick={() => {
+            setShowJoin(true);
+            setShowCreate(false);
+            joinDispatch({ type: 'INIT_DISPLAY', value: userName });
+          }}
           className="flex-1 py-3 rounded-xl text-xs font-sans font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
           style={{ background: '#1a1812', border: '1px solid #3a3420', color: '#d4af37' }}
         >
@@ -158,120 +396,23 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
 
       {/* Create form */}
       {showCreate && (
-        <div className="mb-6 p-4 rounded-2xl" style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.3s ease both' }}>
-          <h3 className="text-sm text-[#d4af37] mb-3 font-semibold">Nueva Competencia</h3>
-          <input
-            type="text"
-            placeholder="Nombre de la competencia"
-            value={createName}
-            onChange={e => setCreateName(e.target.value)}
-            className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
-            style={{ caretColor: '#d4af37' }}
-          />
-          <input
-            type="text"
-            placeholder="Tu nombre para mostrar"
-            value={createDisplayName}
-            onChange={e => setCreateDisplayName(e.target.value)}
-            className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
-            style={{ caretColor: '#d4af37' }}
-          />
-
-          {/* Goal selector */}
-          <label className="text-[10px] uppercase tracking-[0.15em] text-[#6a5a40] font-sans mb-1.5 block">
-            Meta a competir
-          </label>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <button
-              onClick={() => setCreateGoalId('none')}
-              className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
-              style={{
-                background: createGoalId === 'none' ? '#d4af37' : '#1a1812',
-                color: createGoalId === 'none' ? '#131109' : '#6a5a40',
-                border: `1px solid ${createGoalId === 'none' ? '#d4af37' : '#252318'}`,
-              }}
-            >
-              📖 Principal
-            </button>
-            {goals.map(g => (
-              <button
-                key={g.id}
-                onClick={() => setCreateGoalId(g.id)}
-                className="px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all"
-                style={{
-                  background: createGoalId === g.id ? '#d4af37' : '#1a1812',
-                  color: createGoalId === g.id ? '#131109' : '#6a5a40',
-                  border: `1px solid ${createGoalId === g.id ? '#d4af37' : '#252318'}`,
-                }}
-              >
-                {g.emoji} {g.name}
-              </button>
-            ))}
-          </div>
-
-          {createError && (
-            <div className="text-[#ff6b6b] text-xs font-sans mb-3 text-center">{createError}</div>
-          )}
-          <div className="flex gap-2">
-            <button onClick={() => { setShowCreate(false); setCreateError(''); }} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
-              Cancelar
-            </button>
-            <button
-              onClick={handleCreate}
-              disabled={!createName.trim() || !createDisplayName.trim() || creating}
-              className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold transition-all"
-              style={{
-                background: createName.trim() && createDisplayName.trim() && !creating ? '#d4af37' : '#252318',
-                color: createName.trim() && createDisplayName.trim() && !creating ? '#131109' : '#5a5040',
-              }}
-            >
-              {creating ? 'Creando...' : 'Crear'}
-            </button>
-          </div>
-        </div>
+        <CreateCompetitionForm
+          form={createForm}
+          dispatch={createDispatch}
+          goals={goals}
+          onCancel={() => { setShowCreate(false); createDispatch({ type: 'SET_ERROR', value: '' }); }}
+          onSubmit={handleCreate}
+        />
       )}
 
       {/* Join form */}
       {showJoin && (
-        <div className="mb-6 p-4 rounded-2xl" style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.3s ease both' }}>
-          <h3 className="text-sm text-[#d4af37] mb-3 font-semibold">Unirse a Competencia</h3>
-          <input
-            type="text"
-            placeholder="Codigo de invitacion"
-            value={joinCode}
-            onChange={e => setJoinCode(e.target.value.toUpperCase())}
-            maxLength={6}
-            className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3 tracking-[0.3em] text-center uppercase"
-            style={{ caretColor: '#d4af37', letterSpacing: '0.3em' }}
-          />
-          <input
-            type="text"
-            placeholder="Tu nombre para mostrar"
-            value={joinDisplayName}
-            onChange={e => setJoinDisplayName(e.target.value)}
-            className="w-full bg-[#1a1812] border border-[#252318] rounded-xl px-4 py-2.5 text-[#e0d8c8] text-sm font-sans outline-none focus:border-[#d4af37] mb-3"
-            style={{ caretColor: '#d4af37' }}
-          />
-          {joinError && (
-            <div className="text-[#ff6b6b] text-xs font-sans mb-3 text-center">{joinError}</div>
-          )}
-          <div className="flex gap-2">
-            <button onClick={() => { setShowJoin(false); setJoinError(''); }} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
-              Cancelar
-            </button>
-            <button
-              onClick={handleJoin}
-              disabled={!joinCode.trim() || !joinDisplayName.trim()}
-              className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold transition-all"
-              style={{
-                background: joinCode.trim() && joinDisplayName.trim() ? '#d4af37' : '#252318',
-                color: joinCode.trim() && joinDisplayName.trim() ? '#131109' : '#5a5040',
-              }}
-            >
-              Unirse
-            </button>
-          </div>
-        </div>
+        <JoinCompetitionForm
+          form={joinForm}
+          dispatch={joinDispatch}
+          onCancel={() => { setShowJoin(false); joinDispatch({ type: 'SET_ERROR', value: '' }); }}
+          onSubmit={handleJoin}
+        />
       )}
 
       {/* Competition cards */}
@@ -284,92 +425,25 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
       ) : (
         <div className="flex flex-col gap-3">
           {competitions.map((comp, idx) => (
-            <div
+            <CompetitionCard
               key={comp.id}
-              className="p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] relative"
-              style={{
-                background: '#131109',
-                border: '1px solid #3a3420',
-                animation: `fadeSlide 0.3s ease ${idx * 0.05}s both`,
-              }}
-              onClick={() => onSelectCompetition(comp.id)}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="text-sm text-[#d4af37] font-semibold">{comp.name}</h3>
-                  {(comp.goal_name || comp.goal_emoji) && (
-                    <span className="text-[10px] text-[#8a7a50] font-sans">
-                      {comp.goal_emoji} {comp.goal_name}
-                    </span>
-                  )}
-                  {!comp.goal_id && (
-                    <span className="text-[10px] text-[#5a5040] font-sans">📖 Principal</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-[#6a5a40]">
-                    <Users size={12} />
-                    <span className="text-[10px] font-sans">{comp.member_count}</span>
-                  </div>
-                  {comp.is_creator && (
-                    <button
-                      onClick={e => { e.stopPropagation(); setConfirmDelete(comp.id); }}
-                      className="text-[#5a5040] hover:text-[#ff6b6b] transition-colors p-1"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] text-[#5a5040] font-sans">
-                  Desde {comp.start_date}
-                </span>
-                <button
-                  onClick={e => { e.stopPropagation(); copyCode(comp.invite_code, comp.id); }}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-sans font-bold transition-all"
-                  style={{ background: '#1a1812', border: '1px solid #252318', color: '#8a7a50' }}
-                >
-                  {copiedId === comp.id ? <Check size={10} /> : <Copy size={10} />}
-                  {comp.invite_code}
-                </button>
-              </div>
-            </div>
+              comp={comp}
+              idx={idx}
+              copiedId={copiedId}
+              onSelect={onSelectCompetition}
+              onCopyCode={copyCode}
+              onDeleteRequest={setConfirmDelete}
+            />
           ))}
         </div>
       )}
 
       {/* Delete confirmation */}
       {confirmDelete && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-          style={{ background: 'rgba(0,0,0,0.7)' }}
-          onClick={() => setConfirmDelete(null)}
-        >
-          <div
-            className="w-full max-w-xs rounded-2xl p-5 text-center"
-            style={{ background: '#131109', border: '1px solid #3a3420', animation: 'modal-in 0.2s ease both' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <Trash2 size={32} className="mx-auto mb-3" style={{ color: '#ff6b6b' }} />
-            <p className="text-sm text-[#e0d8c8] font-sans mb-4">Eliminar esta competencia?</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleDelete(confirmDelete)}
-                className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-white"
-                style={{ background: '#dc2626' }}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmationModal
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() => handleDelete(confirmDelete)}
+        />
       )}
 
       <style>{`
