@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut, Share2 } from "lucide-react";
 import { useMsal } from '@azure/msal-react';
 import { useAuthFetch } from '../useAuthFetch';
 import { useUserPhoto } from '../useUserPhoto';
@@ -174,6 +174,33 @@ export default function EveryDayCalendar({ goalId = null }) {
   const reward = REWARDS.slice().reverse().find(r => streak >= r.streak) || null;
   const pct = Math.round((totalMarked / 365) * 100);
 
+  // Weekly chart data (last 7 days)
+  const weekData = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const dayNames = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+      days.push({ label: dayNames[d.getDay()], done: !!marked[key], isToday: i === 0 });
+    }
+    return days;
+  }, [marked]);
+
+  // Confetti state
+  const [confetti, setConfetti] = useState([]);
+
+  // Share progress
+  const shareProgress = async () => {
+    const text = `🏆 Un Día a la Vez\n\n✅ ${totalMarked} días logrados\n🔥 Racha de ${streak} días\n${reward ? `${reward.emoji} ${reward.label}` : ''}\n\n¡Un día a la vez!`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Mi Progreso', text }); } catch {}
+    } else {
+      navigator.clipboard.writeText(text);
+      setToast({ emoji: '📋', label: '¡Copiado al portapapeles!', streak: 0 });
+      setTimeout(() => setToast(null), 2500);
+    }
+  };
+
   // Guardar meta en la base de datos
   const saveGoal = (newGoal) => {
     setGoal(newGoal);
@@ -226,7 +253,17 @@ export default function EveryDayCalendar({ goalId = null }) {
         const match = REWARDS.find(r => r.streak === ns);
         if (match) {
           setToast({ ...match, streak: ns });
-          setTimeout(() => setToast(null), 3500);
+          // Launch confetti
+          const pieces = Array.from({ length: 40 }, (_, i) => ({
+            id: Date.now() + i + 100,
+            x: Math.random() * 100,
+            delay: Math.random() * 0.5,
+            color: ['#d4af37', '#f0d060', '#ff8c20', '#e0c050', '#8a6a10'][i % 5],
+            size: 4 + Math.random() * 6,
+            drift: -50 + Math.random() * 100,
+          }));
+          setConfetti(pieces);
+          setTimeout(() => { setToast(null); setConfetti([]); }, 3500);
         }
       } else {
         playUnmarkSound();
@@ -331,6 +368,7 @@ export default function EveryDayCalendar({ goalId = null }) {
         @keyframes glow-pulse { 0%,100%{box-shadow:0 0 6px 1px rgba(212,175,55,0.45)} 50%{box-shadow:0 0 14px 4px rgba(212,175,55,0.8)} }
         @keyframes today-pulse { 0%,100%{box-shadow:0 0 8px 1px rgba(255,140,32,0.4)} 50%{box-shadow:0 0 16px 4px rgba(255,140,32,0.8)} }
         @keyframes fadeSlide { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes confetti-fall { 0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) translateX(var(--drift)) rotate(720deg);opacity:0} }
         .day-cell { transition: transform 0.1s ease, background 0.3s ease; cursor: pointer; }
         .day-cell:active { transform: scale(0.85); }
         .day-cell:hover { opacity: 0.8; }
@@ -432,7 +470,7 @@ export default function EveryDayCalendar({ goalId = null }) {
         </div>
 
         {/* Progreso del Año */}
-        <div className="w-full max-w-2xl h-1 bg-[#1e1c18] rounded-full mb-8 overflow-hidden animate-[fadeSlide_0.6s_ease_0.2s_both]">
+        <div className="w-full max-w-2xl h-1 bg-[#1e1c18] rounded-full mb-6 overflow-hidden animate-[fadeSlide_0.6s_ease_0.2s_both]">
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
             style={{
@@ -441,6 +479,41 @@ export default function EveryDayCalendar({ goalId = null }) {
               boxShadow: "0 0 8px rgba(212,175,55,0.4)"
             }}
           />
+        </div>
+
+        {/* Últimos 7 días + Compartir */}
+        <div className="w-full max-w-2xl mb-8 animate-[fadeSlide_0.6s_ease_0.22s_both]">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-[9px] tracking-[0.2em] uppercase text-[#6a5a40] font-sans">Últimos 7 días</span>
+            <button
+              onClick={shareProgress}
+              className="flex items-center gap-1.5 text-[10px] text-[#6a5a40] hover:text-[#d4af37] font-sans transition-colors"
+            >
+              <Share2 size={12} />
+              Compartir
+            </button>
+          </div>
+          <div className="flex gap-1.5 justify-between">
+            {weekData.map((d, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                <div
+                  className="w-full rounded-lg transition-all duration-500"
+                  style={{
+                    height: d.done ? '32px' : '8px',
+                    background: d.done
+                      ? 'linear-gradient(180deg, #d4af37, #8a6a10)'
+                      : '#1e1c18',
+                    boxShadow: d.done ? '0 0 8px rgba(212,175,55,0.3)' : 'none',
+                    border: d.isToday ? '1px solid #ff8c20' : d.done ? '1px solid #c8a430' : '1px solid #252318',
+                    marginTop: d.done ? '0' : '24px',
+                  }}
+                />
+                <span className={`text-[9px] font-sans ${d.isToday ? 'text-[#ff8c20] font-bold' : 'text-[#5a5040]'}`}>
+                  {d.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Selector de Vistas */}
@@ -572,6 +645,24 @@ export default function EveryDayCalendar({ goalId = null }) {
       </div>
 
       {particles.map(p => <Particle key={p.id} {...p} onDone={removeParticle} />)}
+
+      {/* Confetti */}
+      {confetti.map(c => (
+        <div
+          key={c.id}
+          className="fixed pointer-events-none z-[1001]"
+          style={{
+            left: `${c.x}%`,
+            top: '-10px',
+            width: `${c.size}px`,
+            height: `${c.size}px`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            background: c.color,
+            animation: `confetti-fall 3s ease-out ${c.delay}s forwards`,
+            '--drift': `${c.drift}px`,
+          }}
+        />
+      ))}
 
       {toast && (
         <div className="fixed bottom-20 left-1/2 w-max max-w-[90vw] bg-[#131109] border border-[#d4af37] rounded-2xl p-4 flex items-center gap-4 shadow-[0_10px_40px_rgba(212,175,55,0.2)] z-[1000]"

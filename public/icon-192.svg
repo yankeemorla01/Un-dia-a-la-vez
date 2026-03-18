@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#0d0c0a"/>
+  <rect x="16" y="16" width="160" height="160" rx="28" fill="none" stroke="#d4af37" stroke-width="3" opacity="0.3"/>
+  <text x="96" y="72" text-anchor="middle" font-size="28" font-family="Georgia, serif" fill="#6a5a40" letter-spacing="3">UN DÍA</text>
+  <text x="96" y="130" text-anchor="middle" font-size="64" font-family="Georgia, serif" fill="#d4af37">✦</text>
+  <text x="96" y="170" text-anchor="middle" font-size="18" font-family="Georgia, serif" fill="#6a5a40" letter-spacing="2">A LA VEZ</text>
+</svg>

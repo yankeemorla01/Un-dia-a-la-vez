@@ -120,10 +120,17 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
                     {member.is_me && <span className="text-[9px] text-[#8a7a50] ml-1">(tú)</span>}
                   </span>
                 </div>
-                <span className="text-sm font-sans font-bold text-[#d4af37]">
-                  {member.days_completed}
-                  <span className="text-[10px] text-[#6a5a40] font-normal"> / {member.total_days}d</span>
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className="text-sm font-sans font-bold text-[#d4af37]">
+                    {member.days_completed}
+                    <span className="text-[10px] text-[#6a5a40] font-normal"> / {member.total_days}d</span>
+                  </span>
+                  {member.streak > 0 && (
+                    <span className="text-[10px] font-sans text-[#ff8c20]">
+                      {member.streak}🔥
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Progress bar */}

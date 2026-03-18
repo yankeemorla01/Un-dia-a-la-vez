@@ -6,6 +6,11 @@ import { msalConfig } from './authConfig'
 import './index.css'
 import App from './App.jsx'
 
+// Apply saved theme before render
+if (localStorage.getItem('udv-theme') === 'light') {
+  document.documentElement.classList.add('udv-light')
+}
+
 const msalInstance = new PublicClientApplication(msalConfig)
 
 msalInstance.initialize().then(() => {
@@ -17,3 +22,10 @@ msalInstance.initialize().then(() => {
     </StrictMode>,
   )
 })
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
