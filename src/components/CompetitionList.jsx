@@ -23,6 +23,14 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
   const [joinDisplayName, setJoinDisplayName] = useState(userName || '');
   const [joinError, setJoinError] = useState('');
 
+  // Sync display names when userName loads from MSAL
+  useEffect(() => {
+    if (userName) {
+      setCreateDisplayName(prev => prev || userName);
+      setJoinDisplayName(prev => prev || userName);
+    }
+  }, [userName]);
+
   const loadCompetitions = () => {
     authFetch(`${API}/competitions`)
       .then(r => r.json())
