@@ -39,14 +39,6 @@ export default async function handler(req, res) {
     }
     const competition = compRows[0];
 
-    // day_key uses 0-indexed months (JS getMonth()), e.g. March 17 = "2026-2-17"
-    function dayKeyToDate(key) {
-      const [y, m, d] = key.split('-').map(Number);
-      return new Date(y, m, d); // m is already 0-indexed
-    }
-    const rangeStart = new Date(competition.start_date + 'T00:00:00');
-    const rangeEnd = competition.end_date ? new Date(competition.end_date + 'T00:00:00') : new Date();
-
     const goalFilter = competition.goal_id
       ? 'AND goal_id = $2'
       : 'AND goal_id IS NULL';
@@ -58,7 +50,7 @@ export default async function handler(req, res) {
       [competitionId]
     );
 
-    // Calculate days_completed + streak in a single loop per member
+    // Calculate days_completed + streak per member (all marked days count)
     for (const m of members) {
       const qp = competition.goal_id ? [m.user_id, competition.goal_id] : [m.user_id];
       const { rows: dayRows } = await pool.query(
@@ -67,14 +59,7 @@ export default async function handler(req, res) {
         qp
       );
       const daySet = new Set(dayRows.map(r => r.day_key));
-
-      // Count days in competition range
-      let count = 0;
-      for (const row of dayRows) {
-        const d = dayKeyToDate(row.day_key);
-        if (d >= rangeStart && d <= rangeEnd) count++;
-      }
-      m.days_completed = count;
+      m.days_completed = dayRows.length;
 
       // Calculate streak
       let streak = 0;
@@ -95,8 +80,10 @@ export default async function handler(req, res) {
     // Sort by days_completed DESC, then by join date ASC
     members.sort((a, b) => b.days_completed - a.days_completed || new Date(a.joined_at) - new Date(b.joined_at));
 
-    // Calculate total possible days
-    const totalDays = Math.max(1, Math.ceil((rangeEnd - rangeStart) / (1000 * 60 * 60 * 24)) + 1);
+    // Total possible days = days elapsed this year so far
+    const now = new Date();
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const totalDays = Math.max(1, Math.ceil((now - yearStart) / (1000 * 60 * 60 * 24)) + 1);
 
     const leaderboard = members.map((m, idx) => ({
       position: idx + 1,
