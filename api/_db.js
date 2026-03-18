@@ -89,6 +89,13 @@ export async function initDB() {
       END IF;
     END $$;
 
+    -- Clean up duplicate rows where goal_id IS NULL before creating unique index
+    DELETE FROM udv_user_marked_days a
+    USING udv_user_marked_days b
+    WHERE a.goal_id IS NULL AND b.goal_id IS NULL
+      AND a.user_id = b.user_id AND a.day_key = b.day_key
+      AND a.ctid < b.ctid;
+
     -- Create unique index for NULL goal_id rows (UNIQUE constraint doesn't enforce NULL uniqueness)
     CREATE UNIQUE INDEX IF NOT EXISTS udv_marked_days_null_goal_idx
       ON udv_user_marked_days (user_id, day_key) WHERE goal_id IS NULL;
