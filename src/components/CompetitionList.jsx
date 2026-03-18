@@ -15,6 +15,8 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
   const [createName, setCreateName] = useState('');
   const [createDisplayName, setCreateDisplayName] = useState(userName || '');
   const [createGoalId, setCreateGoalId] = useState('none');
+  const [createError, setCreateError] = useState('');
+  const [creating, setCreating] = useState(false);
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
@@ -35,6 +37,8 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
 
   const handleCreate = () => {
     if (!createName.trim() || !createDisplayName.trim()) return;
+    setCreating(true);
+    setCreateError('');
     authFetch(`${API}/competitions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -45,15 +49,22 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
         goal_id: createGoalId === 'none' ? null : createGoalId,
       }),
     })
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(r => r.json().then(data => {
+        if (!r.ok) throw new Error(data.error || 'Error al crear');
+        return data;
+      }))
       .then(() => {
         setShowCreate(false);
         setCreateName('');
         setCreateDisplayName(userName || '');
         setCreateGoalId('none');
+        setCreateError('');
         loadCompetitions();
       })
-      .catch(() => {});
+      .catch(err => {
+        setCreateError(err.message || 'Error al crear competencia');
+      })
+      .finally(() => setCreating(false));
   };
 
   const handleJoin = () => {
@@ -190,20 +201,23 @@ export default function CompetitionList({ authFetch, onSelectCompetition, userNa
             ))}
           </div>
 
+          {createError && (
+            <div className="text-[#ff6b6b] text-xs font-sans mb-3 text-center">{createError}</div>
+          )}
           <div className="flex gap-2">
-            <button onClick={() => setShowCreate(false)} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
+            <button onClick={() => { setShowCreate(false); setCreateError(''); }} className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold text-[#6a5a40] bg-[#1a1812] border border-[#252318]">
               Cancelar
             </button>
             <button
               onClick={handleCreate}
-              disabled={!createName.trim() || !createDisplayName.trim()}
+              disabled={!createName.trim() || !createDisplayName.trim() || creating}
               className="flex-1 py-2.5 rounded-xl text-xs font-sans font-bold transition-all"
               style={{
-                background: createName.trim() && createDisplayName.trim() ? '#d4af37' : '#252318',
-                color: createName.trim() && createDisplayName.trim() ? '#131109' : '#5a5040',
+                background: createName.trim() && createDisplayName.trim() && !creating ? '#d4af37' : '#252318',
+                color: createName.trim() && createDisplayName.trim() && !creating ? '#131109' : '#5a5040',
               }}
             >
-              Crear
+              {creating ? 'Creando...' : 'Crear'}
             </button>
           </div>
         </div>
