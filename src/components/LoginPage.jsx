@@ -49,9 +49,6 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <style>{`
-        @keyframes fadeSlide { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
     </div>
   );
 }

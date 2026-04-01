@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
 
 export function useUserPhoto() {
   const { instance, accounts } = useMsal();
   const [photoUrl, setPhotoUrl] = useState(null);
+  const accountId = accounts[0]?.homeAccountId;
+  const fetchedRef = useRef(null);
 
   useEffect(() => {
-    if (accounts.length === 0) return;
+    if (!accountId || fetchedRef.current === accountId) return;
+    fetchedRef.current = accountId;
 
+    let objectUrl = null;
     (async () => {
       try {
         const response = await instance.acquireTokenSilent({
@@ -22,13 +26,16 @@ export function useUserPhoto() {
 
         if (res.ok) {
           const blob = await res.blob();
-          setPhotoUrl(URL.createObjectURL(blob));
+          objectUrl = URL.createObjectURL(blob);
+          setPhotoUrl(objectUrl);
         }
       } catch {
         // No photo available
       }
     })();
-  }, [instance, accounts]);
+
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [instance, accountId]);
 
   return photoUrl;
 }

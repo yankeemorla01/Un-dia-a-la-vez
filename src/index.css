@@ -22,3 +22,31 @@ html.udv-light .aspect-square,
 html.udv-light [style*="fontSize"] {
   isolation: isolate;
 }
+
+/* Shared animations */
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tab-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes particle-fly { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx),var(--ty)) scale(0.2); opacity: 0; } }
+@keyframes toast-in { 0% { transform: translateX(-50%) translateY(20px); opacity: 0; } 10% { transform: translateX(-50%) translateY(0); opacity: 1; } 90% { transform: translateX(-50%) translateY(0); opacity: 1; } 100% { transform: translateX(-50%) translateY(-10px); opacity: 0; } }
+@keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 6px 1px rgba(212,175,55,0.45); } 50% { box-shadow: 0 0 14px 4px rgba(212,175,55,0.8); } }
+@keyframes today-pulse { 0%, 100% { box-shadow: 0 0 8px 1px rgba(255,140,32,0.4); } 50% { box-shadow: 0 0 16px 4px rgba(255,140,32,0.8); } }
+@keyframes confetti-fall { 0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) translateX(var(--drift)) rotate(720deg); opacity: 0; } }
+
+.day-cell { transition: transform 0.1s ease, background 0.3s ease; cursor: pointer; }
+.day-cell:active { transform: scale(0.85); }
+.day-cell:hover { opacity: 0.8; }
+input[type="text"]::-webkit-input-placeholder { color: #6a5a40; opacity: 0.5; }
+
+@keyframes tab-dot-in { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes goal-pill-in { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes modal-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes modal-bg-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in-slide { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes leaderboard-row { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes leader-glow { 0%, 100% { box-shadow: 0 0 8px rgba(212,175,55,0.4); } 50% { box-shadow: 0 0 18px rgba(212,175,55,0.8); } }
+@keyframes verse-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes verse-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes reading-slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

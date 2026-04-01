@@ -27,7 +27,7 @@ export default function GoalEditor({ goal, onSave, onClose }) {
           background: '#131109',
           border: '1px solid #3a3420',
           boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
-          animation: 'modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
+          animation: 'modal-in-slide 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
         }}
         role="button"
         tabIndex={0}
@@ -97,10 +97,6 @@ export default function GoalEditor({ goal, onSave, onClose }) {
         </button>
       </div>
 
-      <style>{`
-        @keyframes modal-bg-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modal-in { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-      `}</style>
     </div>
   );
 }

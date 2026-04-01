@@ -52,14 +52,6 @@ export default function GoalSelector({ goals, activeGoalId, onSelectGoal, onAddG
         </button>
       </div>
 
-      <style>{`
-        @keyframes goal-pill-in {
-          from { transform: scale(0.8); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 }

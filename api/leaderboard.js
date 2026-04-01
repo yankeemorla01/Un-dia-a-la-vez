@@ -40,28 +40,28 @@ export default async function handler(req, res) {
     const competition = compRows[0];
 
     const goalFilter = competition.goal_id
-      ? 'AND goal_id = $2'
-      : 'AND goal_id IS NULL';
+      ? 'AND d.goal_id = $2'
+      : 'AND d.goal_id IS NULL';
+    const goalParams = competition.goal_id ? [competitionId, competition.goal_id] : [competitionId];
 
-    // Get members
+    // Single query: get members with their marked days in one shot
     const { rows: members } = await pool.query(
-      `SELECT user_id, display_name, photo_url, joined_at
-       FROM udv_competition_members WHERE competition_id = $1`,
-      [competitionId]
+      `SELECT cm.user_id, cm.display_name, cm.photo_url, cm.joined_at,
+              COALESCE(array_agg(d.day_key) FILTER (WHERE d.day_key IS NOT NULL), '{}') as day_keys
+       FROM udv_competition_members cm
+       LEFT JOIN udv_user_marked_days d
+         ON d.user_id = cm.user_id AND d.marked = true ${goalFilter}
+       WHERE cm.competition_id = $1
+       GROUP BY cm.user_id, cm.display_name, cm.photo_url, cm.joined_at`,
+      goalParams
     );
 
-    // Calculate days_completed + streak per member (all marked days count)
+    // Calculate days_completed + streak per member from aggregated data
     for (const m of members) {
-      const qp = competition.goal_id ? [m.user_id, competition.goal_id] : [m.user_id];
-      const { rows: dayRows } = await pool.query(
-        `SELECT day_key FROM udv_user_marked_days
-         WHERE user_id = $1 AND marked = true ${goalFilter}`,
-        qp
-      );
-      const daySet = new Set(dayRows.map(r => r.day_key));
-      m.days_completed = dayRows.length;
+      const daySet = new Set(Array.isArray(m.day_keys) ? m.day_keys : []);
+      m.days_completed = daySet.size;
+      delete m.day_keys;
 
-      // Calculate streak
       let streak = 0;
       const d = new Date();
       let key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;

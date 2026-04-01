@@ -367,10 +367,6 @@ export default function ProfileTab({ userName, photoUrl, goals, authFetch, onGoa
         />
       )}
 
-      <style>{`
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes modal-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-      `}</style>
     </div>
   );
 }

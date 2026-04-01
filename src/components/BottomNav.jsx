@@ -38,12 +38,6 @@ export default function BottomNav({ currentTab, onChangeTab }) {
           );
         })}
       </div>
-      <style>{`
-        @keyframes tab-dot-in {
-          from { transform: scaleX(0); opacity: 0; }
-          to { transform: scaleX(1); opacity: 1; }
-        }
-      `}</style>
     </nav>
   );
 }

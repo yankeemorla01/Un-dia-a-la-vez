@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer, memo } from "react";
 import { ChevronLeft, ChevronRight, Edit2, Calendar, LayoutGrid, List, LogOut, Share2 } from "lucide-react";
 import { useMsal } from '@azure/msal-react';
-import { useAuthFetch } from '../useAuthFetch';
-import { useUserPhoto } from '../useUserPhoto';
 
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const WEEK_DAYS = ["D", "L", "M", "M", "J", "V", "S"];
@@ -136,8 +134,8 @@ function calendarReducer(state, action) {
   }
 }
 
-// --- MonthGrid component (extracted to avoid inline render function warning) ---
-function MonthGrid({ year, monthIndex, renderDayCell }) {
+// --- MonthGrid component (memoized to avoid re-renders on polling) ---
+const MonthGrid = memo(function MonthGrid({ year, monthIndex, renderDayCell }) {
   const daysInMonth = getDaysInMonth(monthIndex, year);
   const firstDay = getFirstDayOfMonth(monthIndex, year);
 
@@ -151,9 +149,9 @@ function MonthGrid({ year, monthIndex, renderDayCell }) {
       })}
     </div>
   );
-}
+});
 
-export default function EveryDayCalendar({ goalId = null }) {
+export default function EveryDayCalendar({ goalId = null, authFetch, photoUrl }) {
   const [state, dispatch] = useReducer(calendarReducer, calendarInitialState);
   const { marked, goal, viewMode, loading } = state;
 
@@ -163,8 +161,6 @@ export default function EveryDayCalendar({ goalId = null }) {
   const [toast, setToast] = useState(null);
 
   const { instance, accounts } = useMsal();
-  const authFetch = useAuthFetch();
-  const photoUrl = useUserPhoto();
   const userName = accounts[0]?.name || '';
 
   const versionRef = useRef(0);
@@ -193,9 +189,10 @@ export default function EveryDayCalendar({ goalId = null }) {
     });
   }, [authFetch, goalParam]);
 
-  // Polling: pregunta cada 3 segundos si hay cambios nuevos
+  // Polling: pregunta cada 30 segundos si hay cambios (solo cuando tab visible)
   useEffect(() => {
-    const interval = setInterval(() => {
+    const poll = () => {
+      if (document.visibilityState !== 'visible') return;
       authFetch(`${API}/sync?v=${versionRef.current}${goalParam}`)
         .then(r => r.json())
         .then(data => {
@@ -210,8 +207,11 @@ export default function EveryDayCalendar({ goalId = null }) {
           }
         })
         .catch(() => {});
-    }, 3000);
-    return () => clearInterval(interval);
+    };
+    const interval = setInterval(poll, 30000);
+    const onVisible = () => { if (document.visibilityState === 'visible') poll(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); };
   }, [authFetch, goalParam]);
 
   const computeStreak = useCallback((m) => {
@@ -234,10 +234,12 @@ export default function EveryDayCalendar({ goalId = null }) {
     return s;
   }, []);
 
-  const totalMarked = Object.values(marked).filter(Boolean).length;
-  const streak = computeStreak(marked);
-  const reward = REWARDS.slice().reverse().find(r => streak >= r.streak) || null;
-  const pct = Math.round((totalMarked / 365) * 100);
+  const { totalMarked, streak, reward, pct } = useMemo(() => {
+    const total = Object.values(marked).filter(Boolean).length;
+    const s = computeStreak(marked);
+    const r = REWARDS.slice().reverse().find(r => s >= r.streak) || null;
+    return { totalMarked: total, streak: s, reward: r, pct: Math.round((total / 365) * 100) };
+  }, [marked, computeStreak]);
 
   // Weekly chart data (last 7 days)
   const weekData = useMemo(() => {
@@ -376,7 +378,7 @@ export default function EveryDayCalendar({ goalId = null }) {
     }
   };
 
-  const renderDayCell = (dateObj) => {
+  const renderDayCell = useCallback((dateObj) => {
     const day = dateObj.getDate();
     const key = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;
     const isMarked = !!marked[key];
@@ -403,7 +405,7 @@ export default function EveryDayCalendar({ goalId = null }) {
         </span>
       </div>
     );
-  };
+  }, [marked, handleClickDay]);
 
   if (loading) {
     return (
@@ -417,18 +419,6 @@ export default function EveryDayCalendar({ goalId = null }) {
     <div className="flex flex-col items-center relative overflow-x-hidden"
       style={{ color: "#e0d8c8", fontFamily: "'Georgia', 'Times New Roman', serif" }}>
 
-      <style>{`
-        @keyframes particle-fly { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--tx),var(--ty)) scale(0.2);opacity:0} }
-        @keyframes toast-in { 0%{transform:translateX(-50%) translateY(20px);opacity:0} 10%{transform:translateX(-50%) translateY(0);opacity:1} 90%{transform:translateX(-50%) translateY(0);opacity:1} 100%{transform:translateX(-50%) translateY(-10px);opacity:0} }
-        @keyframes glow-pulse { 0%,100%{box-shadow:0 0 6px 1px rgba(212,175,55,0.45)} 50%{box-shadow:0 0 14px 4px rgba(212,175,55,0.8)} }
-        @keyframes today-pulse { 0%,100%{box-shadow:0 0 8px 1px rgba(255,140,32,0.4)} 50%{box-shadow:0 0 16px 4px rgba(255,140,32,0.8)} }
-        @keyframes fadeSlide { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes confetti-fall { 0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) translateX(var(--drift)) rotate(720deg);opacity:0} }
-        .day-cell { transition: transform 0.1s ease, background 0.3s ease; cursor: pointer; }
-        .day-cell:active { transform: scale(0.85); }
-        .day-cell:hover { opacity: 0.8; }
-        input[type="text"]::-webkit-input-placeholder { color: #6a5a40; opacity: 0.5; }
-      `}</style>
 
       <div className="absolute inset-0 pointer-events-none z-0"
         style={{ background: "radial-gradient(ellipse at top, rgba(212,175,55,0.05) 0%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />

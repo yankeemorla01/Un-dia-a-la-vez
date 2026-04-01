@@ -10,16 +10,39 @@ export function getPool() {
       connectionString: process.env.DATABASE_URL || process.env.MONGODB_URI,
       ssl: false,
       max: 2,
-      idleTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
     });
   }
   return pool;
 }
 
+// Schema version — bump when adding new migrations
+const SCHEMA_VERSION = 1;
 let initialized = false;
+
 export async function initDB() {
   if (initialized) return;
   const p = getPool();
+
+  // Create migration tracking table (lightweight, always safe to run)
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS udv_schema_version (
+      id INTEGER PRIMARY KEY DEFAULT 1,
+      version INTEGER DEFAULT 0,
+      CHECK (id = 1)
+    );
+    INSERT INTO udv_schema_version (id, version) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
+  `);
+
+  const { rows } = await p.query('SELECT version FROM udv_schema_version WHERE id = 1');
+  const currentVersion = rows[0]?.version || 0;
+
+  if (currentVersion >= SCHEMA_VERSION) {
+    initialized = true;
+    return;
+  }
+
+  // Run full migration only when schema version is behind
   await p.query(`
     CREATE TABLE IF NOT EXISTS udv_settings (
       id INTEGER PRIMARY KEY DEFAULT 1,
@@ -44,7 +67,6 @@ export async function initDB() {
     VALUES (1, 0)
     ON CONFLICT (id) DO NOTHING;
 
-    -- Multi-user tables
     CREATE TABLE IF NOT EXISTS udv_user_settings (
       user_id VARCHAR(255) PRIMARY KEY,
       goal TEXT DEFAULT 'Mi Meta Diaria',
@@ -62,7 +84,6 @@ export async function initDB() {
       version INTEGER DEFAULT 0
     );
 
-    -- Goals (metas multiples por usuario)
     CREATE TABLE IF NOT EXISTS udv_user_goals (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id VARCHAR(255) NOT NULL,
@@ -73,13 +94,11 @@ export async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
 
-    -- Add goal_id to marked days (nullable for legacy data)
     DO $$ BEGIN
       ALTER TABLE udv_user_marked_days ADD COLUMN goal_id UUID;
     EXCEPTION WHEN duplicate_column THEN NULL;
     END $$;
 
-    -- Drop old PK and create new one with goal_id
     DO $$ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'udv_user_marked_days_unique'
@@ -89,18 +108,15 @@ export async function initDB() {
       END IF;
     END $$;
 
-    -- Clean up duplicate rows where goal_id IS NULL before creating unique index
     DELETE FROM udv_user_marked_days a
     USING udv_user_marked_days b
     WHERE a.goal_id IS NULL AND b.goal_id IS NULL
       AND a.user_id = b.user_id AND a.day_key = b.day_key
       AND a.ctid < b.ctid;
 
-    -- Create unique index for NULL goal_id rows (UNIQUE constraint doesn't enforce NULL uniqueness)
     CREATE UNIQUE INDEX IF NOT EXISTS udv_marked_days_null_goal_idx
       ON udv_user_marked_days (user_id, day_key) WHERE goal_id IS NULL;
 
-    -- Competitions (competencias)
     CREATE TABLE IF NOT EXISTS udv_competitions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name VARCHAR(200) NOT NULL,
@@ -112,7 +128,6 @@ export async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     );
 
-    -- Add goal_id to competitions if not exists
     DO $$ BEGIN
       ALTER TABLE udv_competitions ADD COLUMN goal_id UUID;
     EXCEPTION WHEN duplicate_column THEN NULL;
@@ -127,12 +142,20 @@ export async function initDB() {
       PRIMARY KEY (competition_id, user_id)
     );
 
-    -- Add photo_url column if not exists
     DO $$ BEGIN
       ALTER TABLE udv_competition_members ADD COLUMN photo_url TEXT;
     EXCEPTION WHEN duplicate_column THEN NULL;
     END $$;
+
+    -- Performance indexes
+    CREATE INDEX IF NOT EXISTS idx_user_goals_user_id ON udv_user_goals (user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_marked_days_user_marked ON udv_user_marked_days (user_id, marked) WHERE marked = true;
+    CREATE INDEX IF NOT EXISTS idx_competition_members_user_id ON udv_competition_members (user_id);
+
+    -- Mark migration complete
+    UPDATE udv_schema_version SET version = ${SCHEMA_VERSION} WHERE id = 1;
   `);
+
   initialized = true;
 }
 

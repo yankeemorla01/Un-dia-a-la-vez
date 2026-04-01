@@ -1,17 +1,21 @@
 import { useMsal } from '@azure/msal-react';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { loginRequest } from './authConfig';
 
 export function useAuthFetch() {
   const { instance, accounts } = useMsal();
+  const accountIdRef = useRef(accounts[0]?.homeAccountId);
+  accountIdRef.current = accounts[0]?.homeAccountId;
+  const accountRef = useRef(accounts[0]);
+  accountRef.current = accounts[0];
 
   const authFetch = useCallback(async (url, options = {}) => {
     let token = '';
-    if (accounts.length > 0) {
+    if (accountRef.current) {
       try {
         const response = await instance.acquireTokenSilent({
           ...loginRequest,
-          account: accounts[0],
+          account: accountRef.current,
         });
         token = response.idToken;
       } catch {
@@ -25,7 +29,7 @@ export function useAuthFetch() {
     }
 
     return fetch(url, { ...options, headers });
-  }, [instance, accounts]);
+  }, [instance]);
 
   return authFetch;
 }

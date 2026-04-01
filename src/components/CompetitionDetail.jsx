@@ -159,11 +159,6 @@ export default function CompetitionDetail({ competitionId, authFetch, onBack }) 
         </div>
       )}
 
-      <style>{`
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes leaderboard-row { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes leader-glow { 0%, 100% { box-shadow: 0 0 8px rgba(212,175,55,0.4); } 50% { box-shadow: 0 0 18px rgba(212,175,55,0.8); } }
-      `}</style>
     </div>
   );
 }

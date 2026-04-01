@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', 'attachment; filename="Lector TTS.shortcut"');
     res.setHeader('Content-Length', shortcutData.length);
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
     res.send(shortcutData);
   } catch (err) {
     console.error(err);

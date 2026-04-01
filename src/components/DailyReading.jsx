@@ -212,16 +212,6 @@ function VersePopup({ book, chapter, verse, onClose }) {
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
       style={{ animation: "verse-fade-in 0.2s ease-out" }}
     >
-      <style>{`
-        @keyframes verse-fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes verse-slide-up {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
       <div
         className="relative mx-4 mb-4 sm:mb-0 w-full sm:max-w-md rounded-2xl overflow-hidden"
@@ -502,12 +492,6 @@ export default function DailyReading() {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <style>{`
-          @keyframes reading-slide-up {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-        `}</style>
 
         {/* Verse popup overlay */}
         {bibleView && (
