@@ -110,42 +110,6 @@ function parseRef(refText) {
   return null;
 }
 
-// Format Bible references for readable display
-// "1 Cor. 15:45" → "Primera de Corintios capítulo 15 versículo 45"
-// "Luc. 7:12, 15" → "Lucas capítulo 7 versículo 12, 15"
-// "Sal. 3:5-10" → "Salmos capítulo 3 versículo 5 al 10"
-function humanizeRef(refText) {
-  let result = refText;
-
-  // Expand abbreviations first (e.g. "Luc." → "Lucas")
-  const sorted = Object.entries(ABBR_TO_FULL).sort((a, b) => b[0].length - a[0].length);
-  for (const [abbr, full] of sorted) {
-    if (result.startsWith(abbr)) {
-      result = full + result.slice(abbr.length);
-      break;
-    }
-  }
-
-  // "1 Juan" → "Primera de Juan", "2 Pedro" → "Segunda de Pedro", "3 Juan" → "Tercera de Juan"
-  result = result.replace(/^1\s+/, 'Primera de ');
-  result = result.replace(/^2\s+/, 'Segunda de ');
-  result = result.replace(/^3\s+/, 'Tercera de ');
-
-  // "Lucas 7:12, 15" → "Lucas capítulo 7 versículo 12, 15"
-  // "Lucas 7" → "Lucas capítulo 7"
-  result = result.replace(/(\S)\s+(\d+):(\d[\d,\s\-a-z]*)/, (_, before, chapter, verses) => {
-    let v = verses.trim();
-    // "5-10" → "5 al 10"
-    v = v.replace(/(\d+)\s*-\s*(\d+)/g, '$1 al $2');
-    return `${before} capítulo ${chapter} versículo ${v}`;
-  });
-
-  // If no verse (just chapter), e.g. "Lucas 7"
-  result = result.replace(/(\S)\s+(\d+)$/, '$1 capítulo $2');
-
-  return result;
-}
-
 function RichText({ text, onOpenBible }) {
   const parts = [];
   let lastIndex = 0;
@@ -196,7 +160,7 @@ function RichText({ text, onOpenBible }) {
               font: "inherit",
             }}
           >
-            {humanizeRef(part.content)}
+            {part.content}
           </button>
         ) : (
           <span key={i}>{part.content}</span>
@@ -337,6 +301,15 @@ function expandAbbreviations(text) {
   for (const [abbr, full] of sorted) {
     result = result.replaceAll(abbr, full);
   }
+  // Humanize references for TTS reading
+  result = result.replace(/\b([12])\s+(de\s+)?/g, (_, num) => num === '1' ? 'Primera de ' : 'Segunda de ');
+  result = result.replace(/\b3\s+(de\s+)?(?=Juan)/g, 'Tercera de ');
+  // "capítulo X:Y" → "capítulo X versículo Y"
+  result = result.replace(/(\d+):(\d[\d,\s\-]*)/g, (_, ch, verses) => {
+    let v = verses.trim();
+    v = v.replace(/(\d+)\s*-\s*(\d+)/g, '$1 al $2');
+    return `capítulo ${ch} versículo ${v}`;
+  });
   return result;
 }
 
